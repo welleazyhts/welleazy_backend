@@ -323,7 +323,7 @@ class PrescriptionRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
     # UTILITY ENDPOINTS
 
     @action(detail=False, methods=["get"])
-    def Prescription_type_choices(self, request):
+    def prescription_type_choices(self, request):
         """Get available prescription type choices"""
         return Response(dict(PrescriptionRecord.PRESCRIPTION_TYPE_CHOICES))
 

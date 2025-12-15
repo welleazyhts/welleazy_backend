@@ -297,3 +297,32 @@ def validate(self, data):
         data["renewal_reminder_type"] = None
 
     return data
+
+
+class MedicalCardSerializer(serializers.ModelSerializer):
+    document_for = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    file_url = serializers.FileField(source='file', read_only=True)
+    insurance_company = serializers.CharField(source='policy.insurance_company', read_only=True)
+    policy_number = serializers.CharField(source='policy.policy_number', read_only=True)
+
+    class Meta:
+        model = InsurancePolicyDocument
+        fields = [
+            'id', 
+            'document_for', 
+            'name', 
+            'file_url', 
+            'insurance_company', 
+            'policy_number',
+            'created_at'
+        ]
+
+    def get_document_for(self, obj):
+        # Return "Self" or "Dependant" based on policy configuration
+        if obj.policy.for_whom == 'self':
+            return "Self"
+        return "Dependant"
+
+    def get_name(self, obj):
+        return obj.policy.policy_holder_name

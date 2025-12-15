@@ -97,81 +97,19 @@ class DiagnosticCenterViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
 
-class DiagnosticCenterSearchAPIView(APIView):
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import generics
+from apps.diagnostic_center.filters import DiagnosticCenterFilter
 
-    VALID_KEYS = {
-        "city_id",
-        "test_ids",
-        "health_package_id",
-        "sponsored_package_id"
-    }
+class DiagnosticCenterSearchAPIView(generics.ListAPIView):
+    queryset = DiagnosticCenter.objects.filter(deleted_at__isnull=True).distinct()
+    serializer_class = DiagnosticCenterSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = DiagnosticCenterFilter
+    permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        return super().list(request, *args, **kwargs)
 
-        # validate keys
-        received_keys = set(request.data.keys())
-        invalid_keys = received_keys - self.VALID_KEYS
-
-        if invalid_keys:
-            suggestions = {}
-            for invalid in invalid_keys:
-                close = self.get_close_key(invalid)
-                if close:
-                    suggestions[invalid] = f"Did you mean '{close}'?"
-
-            response = {
-                "detail": f"Invalid parameters: {', '.join(invalid_keys)}"
-            }
-            if suggestions:
-                response["suggestions"] = suggestions
-
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
-
-        city_id = request.data.get("city_id")
-        test_ids = request.data.get("test_ids", [])
-        health_package_id = request.data.get("health_package_id")
-        sponsored_package_id = request.data.get("sponsored_package_id")
-
-        if not city_id:
-            return Response({"detail": "City is required."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            city = City.objects.get(id=city_id)
-        except City.DoesNotExist:
-            return Response({"detail": "City not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        diagnostic_centers = DiagnosticCenter.objects.filter(city=city).distinct()
-
-        if health_package_id:
-            diagnostic_centers = diagnostic_centers.filter(health_packages__id=health_package_id)
-
-        if sponsored_package_id:
-            diagnostic_centers = diagnostic_centers.filter(sponsored_packages__id=sponsored_package_id)
-
-        if test_ids:
-            test_ids = [int(tid) for tid in test_ids if str(tid).isdigit()]
-            diagnostic_centers = diagnostic_centers.filter(tests__in=test_ids).distinct()
-            diagnostic_centers = [
-                dc for dc in diagnostic_centers
-                if set(test_ids).issubset(set(dc.tests.values_list("id", flat=True)))
-            ]
-
-        if not diagnostic_centers:
-            return Response(
-                {"detail": "No diagnostic centers found for the selected filters."},
-                status=status.HTTP_200_OK
-            )
-
-        # serializer = DiagnosticCenterSerializer(diagnostic_centers, many=True)
-        # return Response(serializer.data, status=status.HTTP_200_OK)
-        if hasattr(diagnostic_centers, "values"):
-            centers = list(diagnostic_centers.values("id", "name"))
-        else:
-            centers = [{"id": dc.id, "name": dc.name} for dc in diagnostic_centers]
-
-        return Response({"centers": centers}, status=status.HTTP_200_OK)
-
-    def get_close_key(self, invalid_key):
-        from difflib import get_close_matches
-        matches = get_close_matches(invalid_key, self.VALID_KEYS, n=1, cutoff=0.6)
-        return matches[0] if matches else None

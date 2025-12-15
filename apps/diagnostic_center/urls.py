@@ -6,7 +6,7 @@ router = DefaultRouter()
 router.register(r'diagnostic-centers', DiagnosticCenterViewSet, basename='diagnosticcenter')
 
 urlpatterns = [
-    path('search-centers/', DiagnosticCenterSearchAPIView.as_view(), name='search-centers'),
+    path('search/', DiagnosticCenterSearchAPIView.as_view(), name='search-centers'),
 ]
 
 urlpatterns += router.urls
