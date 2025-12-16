@@ -38,11 +38,9 @@ class MedicineReminderViewSet(SaveUserMixin, viewsets.ModelViewSet):
 
     # ------------ helpers ------------
     def _extract_payload(self, request):
-        """
-        Supports both:
-        - multipart with 'data' field (stringified JSON)
-        - pure JSON body
-        """
+        # Supports both:
+        # - multipart with 'data' field (stringified JSON)
+        # - pure JSON body
         if isinstance(request.data, dict) and "data" in request.data:
             try:
                 return json.loads(request.data["data"])
@@ -167,7 +165,7 @@ class MedicineReminderViewSet(SaveUserMixin, viewsets.ModelViewSet):
         parser_classes=[MultiPartParser]
     )
     def add_document(self, request, pk=None):
-        """Upload one or more documents to a medicine reminder"""
+        # Upload one or more documents to a medicine reminder
         reminder = self.get_object()
 
         # support 'documents' OR 'file/files' keys
@@ -202,7 +200,7 @@ class MedicineReminderViewSet(SaveUserMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["delete"], url_path="documents/delete")
     def delete_document(self, request, pk=None):
-        """Delete a document - requires 'document_id' in data or query params"""
+        # Delete a document - requires 'document_id' in data or query params
         reminder = self.get_object()
 
         doc_id = request.data.get("document_id") or request.query_params.get("document_id")

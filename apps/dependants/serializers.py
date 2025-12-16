@@ -122,7 +122,7 @@ class VerifySwitchOTPSerializer(serializers.Serializer):
         return data
 
     def create(self, validated_data):
-        """Create or activate profile switch."""
+        # Create or activate profile switch.
         user = self.context['request'].user
         dependant = validated_data['dependant']
         otp_obj = validated_data['otp_obj']

@@ -125,7 +125,7 @@ class HospitalizationRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
         parser_classes=[MultiPartParser]
     )
     def add_document(self, request, pk=None):
-        """Upload one or more documents to a hospitalization record"""
+        # Upload one or more documents to a hospitalization record
         record = self.get_object()
 
         # support 'documents' OR 'file/files' keys
@@ -160,7 +160,7 @@ class HospitalizationRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["delete"], url_path="documents/delete")
     def delete_document(self, request, pk=None):
-        """Delete a document - requires 'document_id' in data or query params"""
+        # Delete a document - requires 'document_id' in data or query params
         record = self.get_object()
 
         doc_id = request.data.get("document_id") or request.query_params.get("document_id")

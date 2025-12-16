@@ -19,7 +19,7 @@ class WomanProfileViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"])
     def cycles(self, request, pk=None):
-        """List all saved cycles for the profile"""
+        # List all saved cycles for the profile
         profile = self.get_object()
         qs = profile.cycles.all().order_by("-created_at")
         serializer = CycleEntrySerializer(qs, many=True)
@@ -36,7 +36,7 @@ class CycleEntryViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"])
     def predictions(self, request, pk=None):
-        """Return computed fields for a specific cycle entry (read-only)"""
+        # Return computed fields for a specific cycle entry (read-only)
         entry = self.get_object()
         serializer = self.get_serializer(entry)
         return Response(serializer.data)

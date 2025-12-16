@@ -35,7 +35,7 @@ class HospitalizationRecordSerializer(DependantResolverMixin, serializers.ModelS
 
 
 class HospitalizationPayloadSerializer(serializers.Serializer):
-    """Serializer for creating/updating hospitalization records (without documents)"""
+    # Serializer for creating/updating hospitalization records (without documents)
 
     record_id = serializers.IntegerField(required=False)
 

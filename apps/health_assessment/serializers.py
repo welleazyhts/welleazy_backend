@@ -5,7 +5,6 @@ from apps.common.serializers.dependant_mixin import DependantResolverMixin
 from .models import HealthAssessment
 from .models import FamilyIllnessRecord
 from django.contrib.auth import get_user_model
-from apps.dependants.models import Dependant
 
 class HealthAssessmentListSerializer(serializers.ModelSerializer):
 
@@ -251,9 +250,6 @@ class HealthAssessmentSerializer(DependantResolverMixin, serializers.ModelSerial
 
         instance = super().update(instance, validated_data)
 
-        from .models import FamilyIllnessRecord
-        from apps.dependants.models import Dependant
-
         # If chronic false → wipe all
         if validated_data.get("family_chronic_illness") is False:
             FamilyIllnessRecord.objects.filter(hra=instance).delete()
@@ -322,7 +318,6 @@ class HealthAssessmentCreateSerializer(serializers.Serializer):
 
         dependant = None
         if for_whom == "dependant" and dep_id:
-            from apps.dependants.models import Dependant
             dependant = Dependant.objects.filter(
                 id=dep_id,
                 user=user

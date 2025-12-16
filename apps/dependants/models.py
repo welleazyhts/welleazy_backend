@@ -10,7 +10,7 @@ User = settings.AUTH_USER_MODEL
 
 
 class RelationshipType(BaseModel):
-    """Stores relationship categories like Spouse, Child, etc."""
+    # Stores relationship categories like Spouse, Child, etc.
     name = models.CharField(max_length=50, unique=True)
 
     class Meta:

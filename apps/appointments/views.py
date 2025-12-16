@@ -517,9 +517,8 @@ class DoctorAvailabilityViewSet(viewsets.ModelViewSet):
             raise ValueError("Invalid time format. Use HH:MM (24-hour)")
 
     def _generate_slots(self, start_t: time, end_t: time, slot_minutes: int):
-        """Yield (start_time, end_time) times as time objects (non-overlapping).
-           end_t is exclusive (last slot must fit fully).
-        """
+        # Yield (start_time, end_time) times as time objects (non-overlapping).
+        # end_t is exclusive (last slot must fit fully).
         if slot_minutes <= 0:
             raise ValueError("slot_duration must be > 0")
         start_dt = datetime.combine(date.today(), start_t)

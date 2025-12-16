@@ -101,7 +101,7 @@ class PrescriptionRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="parameters")
     def add_parameter(self, request, pk=None):
-        """Add a new parameter to a prescription record"""
+        # Add a new parameter to a prescription record
         record = self.get_object()
         
         serializer = PrescriptionParameterSerializer(data=request.data)
@@ -124,7 +124,7 @@ class PrescriptionRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["put", "patch"], url_path="parameters/update")
     def update_parameter(self, request, pk=None):
-        """Update an existing parameter - requires 'parameter_id' in request data"""
+        # Update an existing parameter - requires 'parameter_id' in request data
         record = self.get_object()
         
         param_id = request.data.get('parameter_id')
@@ -161,7 +161,7 @@ class PrescriptionRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["delete"], url_path="parameters/delete")
     def delete_parameter(self, request, pk=None):
-        """Delete a parameter - requires 'parameter_id' in request data or query params"""
+        # Delete a parameter - requires 'parameter_id' in request data or query params
         record = self.get_object()
         
         param_id = request.data.get('parameter_id') or request.query_params.get('parameter_id')
@@ -186,7 +186,7 @@ class PrescriptionRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="documents", parser_classes=[MultiPartParser])
     def add_document(self, request, pk=None):
-        """Upload one or more documents to a prescription record"""
+        # Upload one or more documents to a prescription record
         record = self.get_object()
         
         files = request.FILES.getlist("documents") or request.FILES.getlist("files") or request.FILES.getlist("file")
@@ -214,7 +214,7 @@ class PrescriptionRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["delete"], url_path="documents/delete")
     def delete_document(self, request, pk=None):
-        """Delete a document - requires 'document_id' in request data or query params"""
+        # Delete a document - requires 'document_id' in request data or query params
         record = self.get_object()
         
         doc_id = request.data.get('document_id') or request.query_params.get('document_id')
@@ -238,7 +238,7 @@ class PrescriptionRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
     # HELPER METHODS
 
     def _extract_payload(self, request):
-        """Extracts and parses JSON from 'data' field in multipart form"""
+        # Extracts and parses JSON from 'data' field in multipart form
         if isinstance(request.data, dict) and "data" in request.data:
             try:
                 return json.loads(request.data["data"])
@@ -247,7 +247,7 @@ class PrescriptionRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
         return request.data
 
     def _save_record_fields(self, record, validated):
-        """Save main record fields"""
+        # Save main record fields
         simple_fields = [
             "record_type",
             "record_name",
@@ -285,7 +285,7 @@ class PrescriptionRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
                 record.dependant = Dependant.objects.get(id=dep_id)
 
     def _save_parameters(self, record, validated, request):
-        """Save parameters (create/delete) - supports both keep_parameters and parameters"""
+        # Save parameters (create/delete) - supports both keep_parameters and parameters
         # Only handle deletion if keep_parameters is explicitly provided
         if "keep_parameters" in validated:
             keep_ids = validated["keep_parameters"]
@@ -306,7 +306,7 @@ class PrescriptionRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
             )
 
     def _save_documents(self, record, validated, request):
-        """Save documents (create/delete)"""
+        # Save documents (create/delete)
         # Only handle deletion if keep_documents is explicitly provided
         if "keep_documents" in validated:
             keep_ids = validated["keep_documents"]
@@ -324,12 +324,12 @@ class PrescriptionRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def prescription_type_choices(self, request):
-        """Get available prescription type choices"""
+        # Get available prescription type choices
         return Response(dict(PrescriptionRecord.PRESCRIPTION_TYPE_CHOICES))
 
     @action(detail=False, methods=["get"])
     def doctor_specializations(self, request):
-        """Get list of active doctor specializations"""
+        # Get list of active doctor specializations
         from apps.consultation_filter.models import DoctorSpeciality
         from apps.consultation_filter.serializers import DoctorSpecialitySerializer
 

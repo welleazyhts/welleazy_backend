@@ -328,10 +328,8 @@ class HealthAssessmentReportService:
 
     @classmethod
     def _build_advice(cls, hra: HealthAssessment):
-        """
-        Build a list of advice strings based on ALL key fields.
-        This is not a diagnosis, only lifestyle & checkup suggestions.
-        """
+        # Build a list of advice strings based on ALL key fields.
+        # This is not a diagnosis, only lifestyle & checkup suggestions.
         advice = []
 
         # -------- Mood (Step 3) --------

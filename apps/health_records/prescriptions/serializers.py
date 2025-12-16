@@ -57,7 +57,7 @@ class ParameterInputSerializer(serializers.Serializer):
 
 
 class RecordPayloadSerializer(serializers.Serializer):
-    """Serializer for creating/updating prescription records with optional parameters"""
+    # Serializer for creating/updating prescription records with optional parameters
     record_id = serializers.IntegerField(required=False)
     record_date = serializers.DateField()
     record_type = serializers.CharField()

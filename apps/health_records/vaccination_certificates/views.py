@@ -95,7 +95,7 @@ class VaccinationCertificateRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="documents", parser_classes=[MultiPartParser])
     def add_document(self, request, pk=None):
-        """Upload one or more documents to a vaccination record"""
+        # Upload one or more documents to a vaccination record
         record = self.get_object()
         
         files = request.FILES.getlist("documents") or request.FILES.getlist("files") or request.FILES.getlist("file")
@@ -123,7 +123,7 @@ class VaccinationCertificateRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["delete"], url_path="documents/delete")
     def delete_document(self, request, pk=None):
-        """Delete a document - requires 'document_id' in request data or query params"""
+        # Delete a document - requires 'document_id' in request data or query params
         record = self.get_object()
         
         doc_id = request.data.get('document_id') or request.query_params.get('document_id')
@@ -147,7 +147,7 @@ class VaccinationCertificateRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
     # HELPER METHODS
 
     def _extract_payload(self, request):
-        """Extracts and parses JSON from 'data' field in multipart form"""
+        # Extracts and parses JSON from 'data' field in multipart form
         if isinstance(request.data, dict) and "data" in request.data:
             try:
                 return json.loads(request.data["data"])
@@ -175,7 +175,7 @@ class VaccinationCertificateRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
             record.dependant = None if dep_id is None else Dependant.objects.get(id=dep_id)
 
     def _save_documents(self, record, validated, request):
-        """Save documents (create only - deletion via separate endpoint)"""
+        # Save documents (create only - deletion via separate endpoint)
         files = request.FILES.getlist("documents") or request.FILES.getlist("files") or request.FILES.getlist("file")
         for file in files:
             VaccinationCertificateDocument.objects.create(

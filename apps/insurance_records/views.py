@@ -236,7 +236,7 @@ class InsurancePolicyRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
     # DOCUMENT UPLOAD 
     @action(detail=True, methods=["post"], url_path="documents", parser_classes=[MultiPartParser])
     def add_document(self, request, pk=None):
-        """Upload one or more documents to a policy"""
+        # Upload one or more documents to a policy
         policy = self.get_object()
 
         files = (
@@ -295,7 +295,7 @@ class InsurancePolicyRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="medical_cards")
     def medical_cards(self, request):
-        """Get list of uploaded medical cards (documents) for all active policies"""
+        # Get list of uploaded medical cards (documents) for all active policies
         
         # Filter documents where the parent policy belongs to the user and is not deleted
         documents = InsurancePolicyDocument.objects.filter(

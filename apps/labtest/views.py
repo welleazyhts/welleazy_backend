@@ -18,7 +18,7 @@ class TestViewSet(viewsets.ModelViewSet):
     serializer_class = TestSerializer
 
     def list(self, request):
-        #Return list of tests (from external API or local DB).
+        # Return list of tests (from external API or local DB).
         client_api_url = getattr(settings, "CLIENT_TEST_API_URL", None)
 
         # --- Optional: Fetch from Client API ---
@@ -57,7 +57,7 @@ class TestViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request):
-        #Create a new test (for testing).
+        # Create a new test (for testing).
         serializer = TestSerializer(data=request.data)
         if serializer.is_valid():
             test = Test.objects.create(

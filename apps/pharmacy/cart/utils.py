@@ -9,14 +9,7 @@ PINCODE_CACHE_TIMEOUT = 86400  # 24 hours
 
 
 def get_pincode_zone(pincode):
-    """
-    Fetch pincode zone info from client API once per day.
-    Expected API Response Example:
-    {
-      "pincode": "560001",
-      "zone": "metro"   # or "tier1", "tier2", "remote"
-    }
-    """
+    # Fetch pincode zone info from client API once per day.
 
     zone_data = cache.get(PINCODE_CACHE_KEY)
 
@@ -43,9 +36,7 @@ def get_pincode_zone(pincode):
 
 
 def estimate_delivery_date(pincode, order_datetime=None):
-    """
-    Delivery estimation based on dynamic pincode zone from client.
-    """
+    # Delivery estimation based on dynamic pincode zone from client.
 
     from django.conf import settings
 

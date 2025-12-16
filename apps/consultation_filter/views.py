@@ -35,7 +35,7 @@ class DoctorSpecializationViewSet(viewsets.ModelViewSet):
     serializer_class = DoctorSpecialitySerializer
 
     def list(self, request):
-        """Return list of tests (from external API or local DB)."""
+        # Return list of tests (from external API or local DB).
         client_api_url = getattr(settings, "CLIENT_DOCTORSPECIALITY_API_URL", None)
 
         # --- Optional: Fetch from Client API ---
@@ -74,7 +74,7 @@ class DoctorSpecializationViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
-        """Custom create with duplicate check and created_by tracking"""
+        # Custom create with duplicate check and created_by tracking
         name = request.data.get('name')
         description=request.data.get('description')
         image=request.data.get('image')
@@ -330,10 +330,8 @@ class VendorViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'], url_path='list')
     def list_vendors(self, request):
-        """
-        Fetch vendors from client API, sync to DB, and list all vendor names.
-        GET /api/vendors/list/
-        """
+        # Fetch vendors from client API, sync to DB, and list all vendor names.
+        # GET /api/vendors/list/
         try:
             self._sync_vendors_from_client()
         except ValueError as e:
