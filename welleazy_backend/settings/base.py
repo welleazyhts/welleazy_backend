@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-DEBUG = False  # overridden in development.py
+DEBUG = False  
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
@@ -152,10 +152,17 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'welleazy_backend.wsgi.application'
-
-# Database (configured in development/production)
-DATABASES = {}
+# Database
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv("DB_NAME"),
+        'USER': os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'HOST': os.getenv("DB_HOST", "localhost"),
+        'PORT': os.getenv("DB_PORT", "5432"),
+    }
+}
 
 # Email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -165,6 +172,8 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+#Frontend
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://127.0.0.1:8000")
 
 #Twilio
@@ -212,13 +221,24 @@ CHANNEL_LAYERS = {
     },
 }
 
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
-CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://127.0.0.1:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/0")
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = "Asia/Kolkata"
+CELERY_ENABLE_UTC = False
 
-
+CELERY_BEAT_SCHEDULE = {
+    "send_appointment_reminders_every_5_minutes": {
+        "task": "apps.notifications.tasks.send_upcoming_appointment_reminders",
+        "schedule": 5 * 60,  # every 5 minute
+    },
+    "send-upcoming-pharmacy-delivery-reminders": {
+        "task": "apps.notifications.tasks.send_upcoming_pharmacy_delivery_reminders",
+        "schedule": 5 * 60,
+    },
+}
 
 # Client API Settings
 CLIENT_API_TOKEN = os.getenv("CLIENT_API_TOKEN", None)
@@ -229,9 +249,6 @@ CLIENT_DIAGNOSTIC_API_URL = os.getenv("CLIENT_DIAGNOSTIC_API_URL", None)
 CLIENT_VISIT_TYPE_API_URL = os.getenv("CLIENT_VISIT_TYPE_API_URL", None)
 CLIENT_HEALTH_PACKAGE_API_URL = os.getenv("CLIENT_HEALTH_PACKAGE_API_URL", None)
 CLIENT_SPONSORED_PACKAGE_API_URL = os.getenv("CLIENT_SPONSORED_PACKAGE_API_URL", None)
-
-
-
 CLIENT_DOCTORSPECIALITY_API_URL=os.getenv("CLIENT_DOCTORSPECIALITY_API_URL",None)
 CLIENT_LANGUAGE_API_URL=os.getenv("CLIENT_LANGUAGE_API_URL",None)
 CLIENT_PINCODE_API_URL=os.getenv("CLIENT_PINCODE_API_URL",None)
