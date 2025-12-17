@@ -20,7 +20,7 @@ from .utils import generate_time_slots_for_center, get_slot_booked_count
 from datetime import datetime, time, timedelta
 from django.utils import timezone
 from django.db.models import Count
-from .models import CartItem, DiagnosticCenter ,  ReportDocument
+from .models import DiagnosticCenter ,  ReportDocument
 from django.db import transaction
 from .serializers import DoctorAppointmentToCartSerializer , DentalAppointmentToCartSerializer , EyeAppointmentToCartSerializer , AppointmentVoucherSerializer
 from rest_framework.decorators import action

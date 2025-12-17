@@ -3,7 +3,6 @@ from apps.consultation_filter.models import DoctorSpeciality
 from apps.consultation_filter.models import Language, UserLanguagePreference
 from .models import City, Pincode
 from apps.location.serializers import CitySerializer
-
 from .models import Vendor
 
 

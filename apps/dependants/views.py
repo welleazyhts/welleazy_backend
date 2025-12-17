@@ -9,9 +9,6 @@ from .serializers import (
     VerifySwitchOTPSerializer,
     ActiveProfileSerializer
 )
-
-from .models import Dependant, RelationshipType
-from .serializers import DependantSerializer, RelationshipTypeSerializer
 from apps.notifications.utils import notify_user
 
 class RelationshipTypeListCreateView(generics.ListCreateAPIView):

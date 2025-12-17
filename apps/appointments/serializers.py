@@ -20,8 +20,6 @@ from apps.eyedental_care.models import EyeVendorAddress , DentalVendorAddress
 
 from apps.appointments.models import CartItem
 from apps.consultation_filter.models import DoctorSpeciality
-from .models import Appointment
-
 
 
 

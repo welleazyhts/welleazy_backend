@@ -70,7 +70,6 @@ class VoucherCreateSerializer(serializers.ModelSerializer):
         if not gym_center_id:
             raise serializers.ValidationError({"gym_center_id": "This field is required."})
 
-        from .models import GymPackage, GymCenter, Dependant
         package = GymPackage.objects.get(id=package_id)
         gym_center = GymCenter.objects.get(id=gym_center_id)
 
