@@ -12,6 +12,10 @@ from apps.location.models import City
 from apps.health_packages.models import HealthPackage
 from apps.sponsored_packages.models import SponsoredPackage
 
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import generics
+from apps.diagnostic_center.filters import DiagnosticCenterFilter
+
 class DiagnosticCenterViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = DiagnosticCenter.objects.filter(deleted_at__isnull=True)
@@ -97,9 +101,6 @@ class DiagnosticCenterViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
 
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics
-from apps.diagnostic_center.filters import DiagnosticCenterFilter
 
 class DiagnosticCenterSearchAPIView(generics.ListAPIView):
     queryset = DiagnosticCenter.objects.filter(deleted_at__isnull=True).distinct()

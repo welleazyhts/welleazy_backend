@@ -20,20 +20,3 @@ class Test(BaseModel):
     def __str__(self):
         return f"LabTest {self.code}"
 
-
-# class DiagnosticCenter(BaseModel):
-#     name = models.CharField(max_length=255)
-#     code = models.CharField(max_length=100, blank=True, null=True)
-#     address = models.TextField(blank=True, null=True)
-#     area = models.CharField(max_length=255, blank=True, null=True)  
-#     pincode = models.CharField(max_length=10, blank=True, null=True) 
-#     contact_number = models.CharField(max_length=20, blank=True, null=True)
-#     email = models.EmailField(blank=True, null=True)
-#     active = models.BooleanField(default=True)
-#     city = models.ForeignKey(City, on_delete=models.CASCADE, related_name="diagnostic_centers")
-#     tests = models.ManyToManyField(Test, related_name="diagnostic_centers")
-#     visit_types = models.ManyToManyField(VisitType, related_name="diagnostic_centers", blank=True)
-
-
-#     def __str__(self):
-#         return f"{self.name} ({self.code or 'N/A'})"
