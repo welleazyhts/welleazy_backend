@@ -51,9 +51,9 @@ def partner_request(request):
         email_message = EmailMessage(
             subject=subject,
             body=email_body,
-            from_email=settings.EMAIL_HOST_USER,
-            to=["kulkarnisavitri07@gmail.com"],
-            headers={"Reply-To": user_email},
+            from_email=user_email,   
+            to=[settings.EMAIL_HOST_USER],    
+            reply_to=[user_email],        
         )
 
         email_message.send(fail_silently=False)
