@@ -207,8 +207,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOW_ALL_ORIGINS = True
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -217,7 +215,9 @@ ASGI_APPLICATION = "welleazy_backend.asgi.application"
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
+        "CONFIG": {
+            "hosts": [(os.getenv("REDIS_HOST", "127.0.0.1"), int(os.getenv("REDIS_PORT", 6379)))],
+        },
     },
 }
 
@@ -243,15 +243,21 @@ CELERY_BEAT_SCHEDULE = {
 # Client API Settings
 CLIENT_API_TOKEN = os.getenv("CLIENT_API_TOKEN", None)
 
-CLIENT_CITY_API_URL = os.getenv("CLIENT_CITY_API_URL", None)
-CLIENT_TEST_API_URL = os.getenv("CLIENT_TEST_API_URL", None)
-CLIENT_DIAGNOSTIC_API_URL = os.getenv("CLIENT_DIAGNOSTIC_API_URL", None)
-CLIENT_VISIT_TYPE_API_URL = os.getenv("CLIENT_VISIT_TYPE_API_URL", None)
-CLIENT_HEALTH_PACKAGE_API_URL = os.getenv("CLIENT_HEALTH_PACKAGE_API_URL", None)
-CLIENT_SPONSORED_PACKAGE_API_URL = os.getenv("CLIENT_SPONSORED_PACKAGE_API_URL", None)
-CLIENT_DOCTORSPECIALITY_API_URL=os.getenv("CLIENT_DOCTORSPECIALITY_API_URL",None)
-CLIENT_LANGUAGE_API_URL=os.getenv("CLIENT_LANGUAGE_API_URL",None)
-CLIENT_PINCODE_API_URL=os.getenv("CLIENT_PINCODE_API_URL",None)
-CLIENT_DOCTOR_URL=os.getenv("CLIENT_DOCTOR_URL",None)
-CLIENT_VENDOR_URL=os.getenv("CLIENT_VENDOR_URL",None)
+def get_env_url(key, default=None):
+    value = os.getenv(key, default)
+    if value in [None, "None", ""]:
+        return None
+    return value
+
+CLIENT_CITY_API_URL = get_env_url("CLIENT_CITY_API_URL")
+CLIENT_TEST_API_URL = get_env_url("CLIENT_TEST_API_URL")
+CLIENT_DIAGNOSTIC_API_URL = get_env_url("CLIENT_DIAGNOSTIC_API_URL")
+CLIENT_VISIT_TYPE_API_URL = get_env_url("CLIENT_VISIT_TYPE_API_URL")
+CLIENT_HEALTH_PACKAGE_API_URL = get_env_url("CLIENT_HEALTH_PACKAGE_API_URL")
+CLIENT_SPONSORED_PACKAGE_API_URL = get_env_url("CLIENT_SPONSORED_PACKAGE_API_URL")
+CLIENT_DOCTORSPECIALITY_API_URL = get_env_url("CLIENT_DOCTORSPECIALITY_API_URL")
+CLIENT_LANGUAGE_API_URL = get_env_url("CLIENT_LANGUAGE_API_URL")
+CLIENT_PINCODE_API_URL = get_env_url("CLIENT_PINCODE_API_URL")
+CLIENT_DOCTOR_URL = get_env_url("CLIENT_DOCTOR_URL")
+CLIENT_VENDOR_URL = get_env_url("CLIENT_VENDOR_URL")
 
