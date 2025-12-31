@@ -589,3 +589,102 @@ class PharmacyOrderCreateAPIView(APIView):
                 "expected_delivery_date": expected_date,
             }
         }, status=201)
+
+
+class PharmacyOrderListAPIView(APIView):
+    """
+    Get list of user's pharmacy orders
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        orders = PharmacyOrder.objects.filter(
+            user=request.user
+        ).order_by('-created_at')
+
+        orders_data = []
+        for order in orders:
+            items_data = []
+            for item in order.items.all():
+                items_data.append({
+                    'id': item.id,
+                    'medicine': {
+                        'id': item.medicine.id,
+                        'name': item.medicine.name,
+                        'selling_price': float(item.medicine.selling_price),
+                        'image': item.medicine.image.url if item.medicine.image else None,
+                    },
+                    'quantity': item.quantity,
+                    'amount': float(item.amount),
+                })
+
+            orders_data.append({
+                'order_id': order.order_id,
+                'patient_name': order.patient_name,
+                'order_type': order.order_type,
+                'status': order.status,
+                'ordered_date': order.ordered_date.isoformat() if order.ordered_date else None,
+                'expected_delivery_date': order.expected_delivery_date.isoformat() if order.expected_delivery_date else None,
+                'total_amount': float(order.total_amount),
+                'items': items_data,
+                'created_at': order.created_at.isoformat(),
+            })
+
+        return Response(orders_data)
+
+
+class PharmacyOrderDetailAPIView(APIView):
+    """
+    Get details of a specific pharmacy order
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, order_id):
+        try:
+            order = PharmacyOrder.objects.get(
+                order_id=order_id,
+                user=request.user
+            )
+        except PharmacyOrder.DoesNotExist:
+            return Response(
+                {'error': 'Order not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        items_data = []
+        for item in order.items.all():
+            items_data.append({
+                'id': item.id,
+                'medicine': {
+                    'id': item.medicine.id,
+                    'name': item.medicine.name,
+                    'selling_price': float(item.medicine.selling_price),
+                    'mrp': float(item.medicine.mrp_price),
+                    'image': item.medicine.image.url if item.medicine.image else None,
+                },
+                'quantity': item.quantity,
+                'amount': float(item.amount),
+            })
+
+        address_data = None
+        if order.address:
+            address_data = {
+                'address_line1': order.address.address_line1,
+                'address_line2': order.address.address_line2,
+                'city': order.address.city,
+                'state': order.address.state,
+                'pincode': order.address.pincode,
+            }
+
+        return Response({
+            'order_id': order.order_id,
+            'patient_name': order.patient_name,
+            'order_type': order.order_type,
+            'status': order.status,
+            'ordered_date': order.ordered_date.isoformat() if order.ordered_date else None,
+            'expected_delivery_date': order.expected_delivery_date.isoformat() if order.expected_delivery_date else None,
+            'total_amount': float(order.total_amount),
+            'items': items_data,
+            'address': address_data,
+            'created_at': order.created_at.isoformat(),
+        })

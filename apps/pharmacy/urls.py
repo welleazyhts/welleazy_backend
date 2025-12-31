@@ -82,6 +82,9 @@ urlpatterns = [
     # Cart URLs will be included here
     path("cart/", include("apps.pharmacy.cart.urls")),
 
+    # Tata 1MG Integration URLs
+    path("onemg/", include("apps.pharmacy.onemg_urls")),
+
 ]
 
 

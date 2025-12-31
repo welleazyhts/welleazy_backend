@@ -279,9 +279,9 @@ class PincodeViewSet(viewsets.ModelViewSet):
 
 
 class VendorViewSet(viewsets.ModelViewSet):
-   
+
     permission_classes=[IsAuthenticated]
-    queryset = Vendor.objects.all()
+    queryset = Vendor.objects.filter(available=True)
     serializer_class = VendorSerializer
     # filter_backends =[DjangoFilterBackend]
     # filterset_fields = ['name']
@@ -318,13 +318,101 @@ class VendorViewSet(viewsets.ModelViewSet):
 
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        name = self.request.query_params.get("name")
+        queryset = super().get_queryset().prefetch_related('cities_served')
 
+        # Filter by name
+        name = self.request.query_params.get("name")
         if name:
             queryset = queryset.filter(name__icontains=name)
 
-        return queryset
+        # Filter by vendor code
+        code = self.request.query_params.get("code")
+        if code:
+            queryset = queryset.filter(code__iexact=code)
+
+        # Filter by vendor type
+        vendor_type = self.request.query_params.get("vendor_type")
+        if vendor_type:
+            queryset = queryset.filter(vendor_type=vendor_type)
+
+        # Filter by city served
+        city_id = self.request.query_params.get("city_id")
+        if city_id:
+            queryset = queryset.filter(cities_served__id=city_id)
+
+        # Filter by capabilities
+        home_collection = self.request.query_params.get("home_collection")
+        if home_collection is not None:
+            queryset = queryset.filter(home_collection=home_collection.lower() == 'true')
+
+        e_consultation = self.request.query_params.get("e_consultation")
+        if e_consultation is not None:
+            queryset = queryset.filter(e_consultation=e_consultation.lower() == 'true')
+
+        in_clinic = self.request.query_params.get("in_clinic")
+        if in_clinic is not None:
+            queryset = queryset.filter(in_clinic=in_clinic.lower() == 'true')
+
+        return queryset.distinct()
+
+    @action(detail=False, methods=['get'], url_path='for-customer')
+    def for_customer(self, request):
+        """
+        Get list of vendors for customer frontend with filtering options.
+
+        Query params:
+        - vendor_type: diagnostic, pharmacy, consultation, gym, eyedental, multi
+        - city_id: Filter vendors that serve this city
+        - home_collection: true/false
+        - e_consultation: true/false
+        - in_clinic: true/false
+        """
+        queryset = self.get_queryset()
+
+        vendors = queryset.values(
+            'id', 'name', 'code', 'logo', 'vendor_type',
+            'home_collection', 'e_consultation', 'in_clinic', 'priority'
+        ).order_by('priority', 'name')
+
+        return Response({
+            "count": vendors.count(),
+            "vendors": list(vendors)
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='by-city/(?P<city_id>[^/.]+)')
+    def by_city(self, request, city_id=None):
+        """Get vendors that serve a specific city."""
+        try:
+            city = City.objects.get(id=city_id)
+        except City.DoesNotExist:
+            return Response({"error": "City not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        vendors = self.get_queryset().filter(cities_served=city)
+        serializer = self.get_serializer(vendors, many=True)
+
+        return Response({
+            "city": city.name,
+            "count": vendors.count(),
+            "vendors": serializer.data
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='by-type/(?P<vendor_type>[^/.]+)')
+    def by_type(self, request, vendor_type=None):
+        """Get vendors by type (diagnostic, pharmacy, consultation, etc.)."""
+        valid_types = ['diagnostic', 'pharmacy', 'consultation', 'gym', 'eyedental', 'multi']
+        if vendor_type not in valid_types:
+            return Response({
+                "error": f"Invalid vendor type. Valid types: {', '.join(valid_types)}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        vendors = self.get_queryset().filter(vendor_type=vendor_type)
+        serializer = self.get_serializer(vendors, many=True)
+
+        return Response({
+            "vendor_type": vendor_type,
+            "count": vendors.count(),
+            "vendors": serializer.data
+        }, status=status.HTTP_200_OK)
     
 
     

@@ -99,7 +99,7 @@ class CartItem(BaseModel):
     doctor=models.ForeignKey(DoctorProfessionalDetails , null=True , blank=True , on_delete=models.CASCADE)
     def generate_appointment_code():
         return random.randint(10000, 999999)  # 5–6 digit random number
-    appointment_id = models.CharField(  unique=True , default=generate_appointment_code, editable=False , null=True , blank=True)
+    appointment_id = models.CharField(max_length=20, unique=True, default=generate_appointment_code, editable=False, null=True, blank=True)
     specialization = models.ForeignKey(DoctorSpeciality, on_delete=models.CASCADE, related_name="eyedentalcare_specialization", blank=True , null=True)
     patient_name = models.CharField(max_length=150 , blank=True)
     symptoms = models.TextField(max_length=1000, blank=True )

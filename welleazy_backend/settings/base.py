@@ -67,7 +67,15 @@ INSTALLED_APPS = [
     'apps.women_health',
     'apps.payments',
     'apps.notifications',
-    
+
+    # Case Management & CRM
+    'apps.common',
+    'apps.cases',
+    'apps.corporates',
+
+    # Healthcare Service Providers Integration
+    'apps.providers',
+
      # Third-party apps
     'rest_framework',
     "channels",
@@ -237,4 +245,25 @@ CLIENT_LANGUAGE_API_URL=os.getenv("CLIENT_LANGUAGE_API_URL",None)
 CLIENT_PINCODE_API_URL=os.getenv("CLIENT_PINCODE_API_URL",None)
 CLIENT_DOCTOR_URL=os.getenv("CLIENT_DOCTOR_URL",None)
 CLIENT_VENDOR_URL=os.getenv("CLIENT_VENDOR_URL",None)
+
+# Tata 1MG Partner API Settings
+ONEMG_API_BASE_URL = os.getenv("ONEMG_API_BASE_URL", "https://api.1mg.com")
+ONEMG_CLIENT_ID = os.getenv("ONEMG_CLIENT_ID", "")
+ONEMG_CLIENT_SECRET = os.getenv("ONEMG_CLIENT_SECRET", "")
+ONEMG_MERCHANT_ID = os.getenv("ONEMG_MERCHANT_ID", "")
+ONEMG_WEBHOOK_SECRET = os.getenv("ONEMG_WEBHOOK_SECRET", "")
+ONEMG_API_TIMEOUT = int(os.getenv("ONEMG_API_TIMEOUT", "30"))
+
+# Apollo Partner API Settings
+APOLLO_API_BASE_URL = os.getenv("APOLLO_API_BASE_URL", "https://api.apollo247.com")
+APOLLO_USERNAME = os.getenv("APOLLO_USERNAME", "")
+APOLLO_PASSWORD = os.getenv("APOLLO_PASSWORD", "")
+APOLLO_CLIENT_ID = os.getenv("APOLLO_CLIENT_ID", "")
+APOLLO_AGREEMENT_ID = os.getenv("APOLLO_AGREEMENT_ID", "")
+APOLLO_API_TIMEOUT = int(os.getenv("APOLLO_API_TIMEOUT", "30"))
+
+# Default Healthcare Service Providers
+DEFAULT_CONSULTATION_PROVIDER = os.getenv("DEFAULT_CONSULTATION_PROVIDER", "apollo")
+DEFAULT_DIAGNOSTICS_PROVIDER = os.getenv("DEFAULT_DIAGNOSTICS_PROVIDER", "apollo")
+DEFAULT_PHARMACY_PROVIDER = os.getenv("DEFAULT_PHARMACY_PROVIDER", "onemg")
 

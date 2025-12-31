@@ -187,20 +187,77 @@ class DoctorProfessionalViewSet(viewsets.ModelViewSet):
     queryset = DoctorProfessionalDetails.objects.all()
     serializer_class = DoctorProfessionalDetailsSerializer
 
-    
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related('vendor', 'specialization', 'language', 'doctor')
+
+        # Filter by vendor_id
+        vendor_id = self.request.query_params.get('vendor_id')
+        if vendor_id:
+            queryset = queryset.filter(vendor_id=vendor_id)
+
+        # Filter by vendor_code (e.g., ?vendor_code=APOLLO)
+        vendor_code = self.request.query_params.get('vendor_code')
+        if vendor_code:
+            queryset = queryset.filter(vendor__code__iexact=vendor_code)
+
+        # Filter by multiple vendor IDs (e.g., ?vendor_ids=1,2,3)
+        vendor_ids = self.request.query_params.get('vendor_ids')
+        if vendor_ids:
+            vendor_id_list = [int(v) for v in vendor_ids.split(',') if v.isdigit()]
+            queryset = queryset.filter(vendor_id__in=vendor_id_list)
+
+        # Filter by specialization_id
+        specialization_id = self.request.query_params.get('specialization_id')
+        if specialization_id:
+            queryset = queryset.filter(specialization_id=specialization_id)
+
+        # Filter by language_id
+        language_id = self.request.query_params.get('language_id')
+        if language_id:
+            queryset = queryset.filter(language_id=language_id)
+
+        # Filter by consultation type
+        e_consultation = self.request.query_params.get('e_consultation')
+        if e_consultation is not None:
+            queryset = queryset.filter(e_consultation=e_consultation.lower() == 'true')
+
+        in_clinic = self.request.query_params.get('in_clinic')
+        if in_clinic is not None:
+            queryset = queryset.filter(in_clinic=in_clinic.lower() == 'true')
+
+        return queryset.distinct()
+
     @action(detail=False, methods=['get'], url_path='search')
     def search(self, request):
-       
-
+        """
+        Search doctors with various filters including vendor.
+        Supports:
+        - vendor: vendor name (partial match)
+        - vendor_id: vendor ID (exact match)
+        - vendor_code: vendor code like APOLLO (exact match)
+        - language: language name (partial match)
+        - name: doctor name (partial match)
+        - specialization: specialization name (partial match)
+        - e_consultation: true/false
+        - in_clinic: true/false
+        """
         vendor = request.query_params.get('vendor')
+        vendor_id = request.query_params.get('vendor_id')
+        vendor_code = request.query_params.get('vendor_code')
         language = request.query_params.get('language')
         name = request.query_params.get('name')
         specialization = request.query_params.get('specialization')
+        e_consultation = request.query_params.get('e_consultation')
+        in_clinic = request.query_params.get('in_clinic')
 
-        qs = DoctorProfessionalDetails.objects.all()
+        qs = DoctorProfessionalDetails.objects.select_related('vendor', 'specialization', 'language', 'doctor')
 
-        # Apply filters only if provided
-        if vendor:
+        # Vendor filters
+        if vendor_id:
+            qs = qs.filter(vendor_id=vendor_id)
+        elif vendor_code:
+            qs = qs.filter(vendor__code__iexact=vendor_code)
+        elif vendor:
             qs = qs.filter(vendor__name__icontains=vendor)
 
         if language:
@@ -212,10 +269,19 @@ class DoctorProfessionalViewSet(viewsets.ModelViewSet):
         if specialization:
             qs = qs.filter(specialization__name__icontains=specialization)
 
+        if e_consultation is not None:
+            qs = qs.filter(e_consultation=e_consultation.lower() == 'true')
+
+        if in_clinic is not None:
+            qs = qs.filter(in_clinic=in_clinic.lower() == 'true')
+
         qs = qs.distinct()
 
         serializer = self.get_serializer(qs, many=True)
-        return Response(serializer.data)
+        return Response({
+            "count": qs.count(),
+            "results": serializer.data
+        })
 
 
     def perform_create(self, serializer):

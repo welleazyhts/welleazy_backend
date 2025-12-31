@@ -66,6 +66,9 @@ urlpatterns = [
     path("api/payments/", include("apps.payments.urls")),
 
     path("api/notifications/", include("apps.notifications.urls")),
+
+    # Healthcare Service Providers (unified API)
+    path("api/providers/", include("apps.providers.urls")),
 ]
 
 if settings.DEBUG:

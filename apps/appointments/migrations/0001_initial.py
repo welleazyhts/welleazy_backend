@@ -149,7 +149,7 @@ class Migration(migrations.Migration):
                 ('discount_amount', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
                 ('final_price', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('appointment_id', models.CharField(blank=True, default=apps.appointments.models.CartItem.generate_appointment_code, editable=False, null=True, unique=True)),
+                ('appointment_id', models.CharField(max_length=20, blank=True, default=apps.appointments.models.CartItem.generate_appointment_code, editable=False, null=True, unique=True)),
                 ('patient_name', models.CharField(blank=True, max_length=150)),
                 ('symptoms', models.TextField(blank=True, max_length=1000)),
                 ('mode', models.CharField(blank=True, choices=[('video', 'Video Consultation'), ('tele', 'Telephonic Consultation'), ('in-person', 'In-Person Consultation')], max_length=10, null=True)),

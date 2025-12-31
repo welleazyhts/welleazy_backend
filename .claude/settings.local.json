@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd:*)",
+      "Bash(dir:*)",
+      "Bash(dir \"D:\\Welleazy_Python\"\")",
+      "Bash(wc:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(pip install:*)",
+      "Bash(python manage.py migrate:*)",
+      "Bash(python manage.py shell:*)",
+      "Bash(python manage.py runserver:*)",
+      "Bash(timeout:*)",
+      "Bash(curl:*)",
+      "Bash(npm start)",
+      "Bash(python manage.py makemigrations:*)",
+      "Bash(django-admin startproject:*)",
+      "Bash(python manage.py check:*)",
+      "Bash(npm create:*)",
+      "Bash(xargs:*)"
+    ]
+  }
+}

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from apps.pharmacy.models import PharmacyOrder , PharmacyOrderItem , MedicineCoupon as PharmacyCoupon
+# Note: PharmacyOrder, PharmacyOrderItem, MedicineCoupon are registered in apps.pharmacy.admin
 from apps.labtest.models import Test as LabTestBooking
 from apps.sponsored_packages.models import SponsoredPackage as SponsoredPackageBooking
 from apps.health_packages.models import HealthPackage as HealthPackageBooking
@@ -9,9 +9,6 @@ from apps.appointments.models import Appointment
 
 
 admin.site.register(Appointment)
-admin.site.register(PharmacyOrder)
-admin.site.register(PharmacyOrderItem)
-admin.site.register(PharmacyCoupon)
 admin.site.register(LabTestBooking)
 admin.site.register(SponsoredPackageBooking)
 admin.site.register(HealthPackageBooking)

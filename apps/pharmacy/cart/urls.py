@@ -22,8 +22,8 @@ from .views import (
     DownloadPrescriptionAPIView,
     SetDeliveryModeAPIView,
     PharmacyOrderCreateAPIView,
-    
-
+    PharmacyOrderListAPIView,
+    PharmacyOrderDetailAPIView,
 )
 
 urlpatterns=[
@@ -56,6 +56,10 @@ urlpatterns=[
 
     #-- Delivery Mode ---
     path("delivery_mode/", SetDeliveryModeAPIView.as_view()),
+
+    #-- Orders ---
+    path("orders/", PharmacyOrderListAPIView.as_view()),
+    path("orders/<str:order_id>/", PharmacyOrderDetailAPIView.as_view()),
 ]
 
 

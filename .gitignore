@@ -40,3 +40,5 @@ Thumbs.db
 # Backup / temp
 *.bak
 *.swp
+
+nul
