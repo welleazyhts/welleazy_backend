@@ -19,15 +19,17 @@ class DoctorPersonalDetailsSerializer(serializers.ModelSerializer):
 class DoctorProfessionalDetailsSerializer(serializers.ModelSerializer):
 
     # Read only
-    specialization = DoctorSpecialitySerializer(read_only=True)
+    specialization = DoctorSpecialitySerializer( many=True ,read_only=True)
     vendor = VendorSerializer(read_only=True)
-    language = LanguageSerializer(read_only=True)
+    language = LanguageSerializer(many=True ,read_only=True)
     name = serializers.CharField(source="doctor.full_name", read_only=True)
+    city_name= serializers.CharField( source="doctor.city.name" , read_only = True)
 
     # Write only
     specialization_id = serializers.PrimaryKeyRelatedField(
         queryset=DoctorSpeciality.objects.all(),
         source="specialization",
+        many=True,
         write_only=True
     )
     vendor_id = serializers.PrimaryKeyRelatedField(
@@ -38,6 +40,7 @@ class DoctorProfessionalDetailsSerializer(serializers.ModelSerializer):
     language_id = serializers.PrimaryKeyRelatedField(
         queryset=Language.objects.all(),
         source="language",
+        many=True,
         write_only=True
     )
 
@@ -50,6 +53,7 @@ class DoctorProfessionalDetailsSerializer(serializers.ModelSerializer):
             "vendor", "vendor_id",
             "specialization", "specialization_id",
             "language", "language_id",
+            "city_name",
             "experience_years",
             "consultation_fee",
             "license_number",
