@@ -16,7 +16,7 @@ from datetime import date , datetime
 from apps.appointments.models import Appointment as AppointmentModel
 from apps.doctor_details.models import DoctorProfessionalDetails
 from apps.doctor_details.serializers import DoctorProfessionalDetailsSerializer,DoctorPersonalDetailsSerializer
-from apps.eyedental_care.models import EyeVendorAddress , DentalVendorAddress
+# from apps.eyedental_care.models import EyeVendorAddress , DentalVendorAddress
 
 from apps.appointments.models import CartItem
 from apps.consultation_filter.models import DoctorSpeciality
@@ -316,6 +316,13 @@ class AddPackageToCartSerializer(serializers.Serializer):
 class DoctorAvailabilitySerializer(serializers.ModelSerializer):
     doctor_name = serializers.CharField(source='doctor.doctor.name', read_only=True)
 
+    start_time = serializers.TimeField(
+        input_formats=["%H:%M", "%H:%M:%S", "%I:%M %p"]
+    )
+    end_time = serializers.TimeField(
+        input_formats=["%H:%M", "%H:%M:%S", "%I:%M %p"]
+    )
+
     class Meta:
         model = DoctorAvailability
         fields = '__all__'
@@ -335,7 +342,11 @@ class DoctorAppointmentToCartSerializer(serializers.Serializer):
     symptoms = serializers.CharField(required=False, allow_blank=True)
 
     appointment_date = serializers.DateField()
-    appointment_time = serializers.TimeField()
+  
+    appointment_time = serializers.TimeField(
+        input_formats=["%H:%M", "%H:%M:%S", "%I:%M %p"]
+    )
+   
     mode = serializers.CharField(required=False, allow_blank=True)
     
     note = serializers.CharField(required=False, allow_blank=True)

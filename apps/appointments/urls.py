@@ -11,8 +11,7 @@ from .views import (
 from .views import(
     SelectDoctorAPIView,
     AppointmentToCartAPIView,
-    DentalAppointmentToCartAPIView,
-    EyeAppointmentToCartAPIView,
+    
     DoctorAvailabilityViewSet,
     RescheduleAppointmentAPIView,
     CreateAppointmentVoucherAPIView,
@@ -29,8 +28,8 @@ urlpatterns = [
     path("add-to-cart/", AddToCartAPIView.as_view(), name="appt-add-to-cart"),
     path('select-doctor/' , SelectDoctorAPIView.as_view() , name="select-doctor-before" ),
     path("add-appointment-to-cart/" , AppointmentToCartAPIView.as_view() , name="doc-appt-add-to-cart"),
-    path("add-dentalappt-to-cart/" , DentalAppointmentToCartAPIView.as_view()),
-    path("add-eyeappt-to-cart/" , EyeAppointmentToCartAPIView.as_view()),
+    # path("add-dentalappt-to-cart/" , DentalAppointmentToCartAPIView.as_view()),
+    # path("add-eyeappt-to-cart/" , EyeAppointmentToCartAPIView.as_view()),
     path("cart/", UserCartAPIView.as_view(), name="user-cart"),
     path("cart/<int:cart_id>/checkout/", CheckoutCartAPIView.as_view(), name="cart-checkout"),
     path("cart/<int:cart_id>/confirm/", ConfirmCheckoutAPIView.as_view(), name="cart-confirm"),

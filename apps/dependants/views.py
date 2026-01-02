@@ -35,7 +35,8 @@ class DependantListCreateView(generics.ListCreateAPIView):
         )
 
     def perform_create(self, serializer):
-        dependant=serializer.save()
+        dependant=serializer.save(created_by=self.request.user,
+            updated_by=self.request.user)
         
         notify_user(
             self.request.user,
