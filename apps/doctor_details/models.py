@@ -4,6 +4,7 @@ from django.db import models
 
 from apps.consultation_filter.models import DoctorSpeciality,Language,Vendor
 from apps.common.models import BaseModel
+from apps.location.models import City 
 
 
 from django.conf import settings
@@ -11,7 +12,7 @@ User=settings.AUTH_USER_MODEL
 class DoctorPersonalDetails(BaseModel):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="doctor_personal")
-
+    city = models.ForeignKey(City , on_delete=models.CASCADE , blank=True)
     full_name = models.CharField(max_length=150)
     gender = models.CharField(max_length=20, choices=[('Male', 'Male'), ('Female', 'Female')])
     dob = models.DateField(null=True, blank=True)
@@ -42,8 +43,8 @@ class DoctorProfessionalDetails(BaseModel):
 
     # All ForeignKeys as required by you
     vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True, related_name="doctors")
-    specialization = models.ForeignKey(DoctorSpeciality, on_delete=models.SET_NULL, null=True, related_name="doctors")
-    language = models.ForeignKey(Language, on_delete=models.SET_NULL, null=True, related_name="doctors")
+    specialization = models.ManyToManyField(DoctorSpeciality, blank=True, related_name="doctors")
+    language = models.ManyToManyField(Language, blank=True, related_name="doctors")
     qualification=models.CharField(max_length=100,null=True , blank=True)
 
     experience_years = models.IntegerField(default=0)
