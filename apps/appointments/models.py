@@ -11,7 +11,7 @@ from apps.sponsored_packages.models import SponsoredPackage
 from datetime import time
 from apps.doctor_details.models import DoctorProfessionalDetails
 from apps.consultation_filter.models import DoctorSpeciality , Vendor
-from apps.eyedental_care.models import EyeVendorAddress , DentalVendorAddress
+
 import random
 
 import uuid
@@ -115,9 +115,9 @@ class CartItem(BaseModel):
     #EYE DENTAL CARE APPOINTMENTS----
   
     # Service_type=models.CharField(max_length=20 , choices=SERVICE_TYPES , null=True , blank=True)
-    vendor = models.ForeignKey(Vendor , on_delete=models.CASCADE , null=True , blank=True)
-    eye_vendor_centers= models.ForeignKey(EyeVendorAddress , on_delete= models.CASCADE , null=True , blank=True)
-    dental_vendor_centers = models.ForeignKey(DentalVendorAddress , on_delete=models.CASCADE , null=True , blank=True)
+    # vendor = models.ForeignKey(Vendor , on_delete=models.CASCADE , null=True , blank=True)
+    # eye_vendor_centers= models.ForeignKey(EyeVendorAddress , on_delete= models.CASCADE , null=True , blank=True)
+    # dental_vendor_centers = models.ForeignKey(DentalVendorAddress , on_delete=models.CASCADE , null=True , blank=True)
    
 
     # USED ONLY FOR LABTEST
@@ -193,9 +193,9 @@ class Appointment(BaseModel):
 
     # EYE & DENTAL APPOINTMENT----
 
-    vendor = models.ForeignKey(Vendor , on_delete=models.CASCADE , null=True , blank=True)
-    eye_vendor_centers= models.ForeignKey(EyeVendorAddress , on_delete= models.CASCADE , null=True , blank=True)
-    dental_vendor_centers = models.ForeignKey(DentalVendorAddress , on_delete=models.CASCADE , null=True , blank=True)
+    # vendor = models.ForeignKey(Vendor , on_delete=models.CASCADE , null=True , blank=True)
+    # eye_vendor_centers= models.ForeignKey(EyeVendorAddress , on_delete= models.CASCADE , null=True , blank=True)
+    # dental_vendor_centers = models.ForeignKey(DentalVendorAddress , on_delete=models.CASCADE , null=True , blank=True)
 
 
     # PAYMENT RELATED----

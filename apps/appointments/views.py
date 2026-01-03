@@ -25,7 +25,7 @@ from django.db import transaction
 from .serializers import DoctorAppointmentToCartSerializer , DentalAppointmentToCartSerializer , EyeAppointmentToCartSerializer , AppointmentVoucherSerializer
 from rest_framework.decorators import action
 from apps.consultation_filter.models import DoctorSpeciality
-from apps.eyedental_care.models import EyeVendorAddress , DentalVendorAddress
+
 from apps.notifications.utils import notify_user
 from decimal import Decimal
 from rest_framework import viewsets, status
@@ -149,20 +149,20 @@ class CheckoutCartAPIView(APIView):
 
             # EYE -DENTAL DETASILS-----
 
-            eye_dental_info = None
-            if item.item_type in ["eye_appointment", "dental_appointment"]:
-                eye_dental_info = {
-                    "vendor": item.vendor.id if item.vendor else None,
-                    "eye_center": item.eye_vendor_centers.id if item.eye_vendor_centers else None,
-                    "dental_center": item.dental_vendor_centers.id if item.dental_vendor_centers else None,
-                    "appointment_date": item.appointment_date,
-                    "appointment_time": item.appointment_time,
-                    "consultation_fee": float(item.consultation_fee or 0),
-                    "for_whom": item.for_whom,
-                    "patient_name": item.patient_name,
-                    "dependant": item.dependant.id if item.dependant else None,
-                    "note": item.note,
-                } 
+            # eye_dental_info = None
+            # if item.item_type in ["eye_appointment", "dental_appointment"]:
+            #     eye_dental_info = {
+            #         "vendor": item.vendor.id if item.vendor else None,
+            #         "eye_center": item.eye_vendor_centers.id if item.eye_vendor_centers else None,
+            #         "dental_center": item.dental_vendor_centers.id if item.dental_vendor_centers else None,
+            #         "appointment_date": item.appointment_date,
+            #         "appointment_time": item.appointment_time,
+            #         "consultation_fee": float(item.consultation_fee or 0),
+            #         "for_whom": item.for_whom,
+            #         "patient_name": item.patient_name,
+            #         "dependant": item.dependant.id if item.dependant else None,
+            #         "note": item.note,
+            #     } 
 
             # LAB DETAILS------
             lab_info = None
@@ -211,7 +211,7 @@ class CheckoutCartAPIView(APIView):
                     "discount": discount,
                     "final_price": final_price,
                     "doctor_appointment": doctor_info,
-                    "eye_dental_appointment": eye_dental_info,
+                    
                     "lab_appointment": lab_info,
                     "health_package": health_package_info,
                     "sponsored_package": sponsored_package_info,
@@ -279,58 +279,58 @@ class ConfirmCheckoutAPIView(APIView):
                 })
 
 
-            elif item.item_type in ["eye_appointment", "dental_appointment"]:
-                appt = Appointment.objects.create(
-                    user=request.user,
-                    item_type=item.item_type,
-                    vendor=item.vendor,
-                    eye_vendor_centers=item.eye_vendor_centers,
-                    for_whom=item.for_whom,
-                    dependant=item.dependant,
-                    note=item.note,
-                    patient_name= item.patient_name,
-                    scheduled_at=scheduled_at,
-                    status="confirmed",
-                )
-                when=timezone.localtime(scheduled_at) if timezone.is_aware(scheduled_at) else scheduled_at
-                notify_user(
-                    request.user,
-                    "Eye Appointment Confirmed",
-                    f"Your eye appointment is confirmed for "
-                    f"{when.strftime('%d %b %Y')} at {when.strftime('%I:%M %p')}.",
-                    item_type="eye_appointment"
-                )
+            # elif item.item_type in ["eye_appointment", "dental_appointment"]:
+            #     appt = Appointment.objects.create(
+            #         user=request.user,
+            #         item_type=item.item_type,
+            #         vendor=item.vendor,
+            #         eye_vendor_centers=item.eye_vendor_centers,
+            #         for_whom=item.for_whom,
+            #         dependant=item.dependant,
+            #         note=item.note,
+            #         patient_name= item.patient_name,
+            #         scheduled_at=scheduled_at,
+            #         status="confirmed",
+            #     )
+            #     when=timezone.localtime(scheduled_at) if timezone.is_aware(scheduled_at) else scheduled_at
+            #     notify_user(
+            #         request.user,
+            #         "Eye Appointment Confirmed",
+            #         f"Your eye appointment is confirmed for "
+            #         f"{when.strftime('%d %b %Y')} at {when.strftime('%I:%M %p')}.",
+            #         item_type="eye_appointment"
+            #     )
 
-                created.append({
-                    "appointment_id": appt.id,
-                    "type": "eye_appointment",
-                    "date": item.appointment_date or item.selected_date,
-                    "time": item.appointment_time or item.selected_time,
-                })
+            #     created.append({
+            #         "appointment_id": appt.id,
+            #         "type": "eye_appointment",
+            #         "date": item.appointment_date or item.selected_date,
+            #         "time": item.appointment_time or item.selected_time,
+            #     })
 
             # ---------------------------------------------------------
             # DENTAL APPOINTMENT
             # ---------------------------------------------------------
-            elif item.item_type == "dental_appointment":
-                appt = Appointment.objects.create(
-                    user=request.user,
-                    item_type="dental_appointment",
-                    vendor=item.vendor,
-                    dental_vendor_centers=item.dental_vendor_centers,
-                    for_whom=item.for_whom,
-                    dependant=item.dependant,
-                    note=item.note,
-                    patient_name= item.patient_name,
-                    scheduled_at=scheduled_at,
-                    status="pending"
-                )
+            # elif item.item_type == "dental_appointment":
+            #     appt = Appointment.objects.create(
+            #         user=request.user,
+            #         item_type="dental_appointment",
+            #         vendor=item.vendor,
+            #         dental_vendor_centers=item.dental_vendor_centers,
+            #         for_whom=item.for_whom,
+            #         dependant=item.dependant,
+            #         note=item.note,
+            #         patient_name= item.patient_name,
+            #         scheduled_at=scheduled_at,
+            #         status="pending"
+            #     )
 
-                created.append({
-                    "appointment_id": appt.id,
-                    "type": item.item_type,
-                    "date": item.appointment_date,
-                    "time": item.appointment_time,
-                })
+            #     created.append({
+            #         "appointment_id": appt.id,
+            #         "type": item.item_type,
+            #         "date": item.appointment_date,
+            #         "time": item.appointment_time,
+            #     })
 
 
             # ----------------------------------------------------------------------------
@@ -514,7 +514,7 @@ class DoctorAvailabilityViewSet(viewsets.ModelViewSet):
         try:
             return datetime.strptime(s, "%I:%M %p").time()
         except Exception:
-            raise ValueError("Invalid time format. Use HH:MM (24-hour)")
+            raise ValueError("Invalid time format. ")
 
     def _generate_slots(self, start_t: time, end_t: time, slot_minutes: int):
         # Yield (start_time, end_time) times as time objects (non-overlapping).
@@ -693,23 +693,23 @@ class SelectDoctorAPIView(APIView):
         doctor = get_object_or_404(DoctorProfessionalDetails, id=doctor_id)
 
         # Auto-select specialization from doctor
-        specialization = doctor.specialization  # assuming FK: doctor.specialization
+        specializations = doctor.specialization.all()
 
-        if not specialization:
+        if not specializations.exists():
             return Response(
                 {"error": "This doctor has no specialization assigned"},
                 status=400
             )
 
         # Save in session
-        request.session["selected_doctor_id"] = doctor_id
-        request.session["selected_specialization_id"] = specialization.id
+        # request.session["selected_doctor_id"] = doctor.id
+        # request.session["selected_specialization_id"] = specializations.id
 
         return Response({
             "message": "Doctor & specialization selected successfully",
             "doctor_id": doctor_id,
-            "specialization_id": specialization.id,
-            "specialization_name": specialization.name
+            "doctor_name":doctor.doctor.full_name,
+            "specialities": [{"id":s.id , "name":s.name} for s in specializations]
         }, status=200)
 
 
@@ -874,297 +874,297 @@ class AppointmentToCartAPIView(APIView):
 
 # DENTAL AND EYE APPOINTMENTS-----
 
-class DentalAppointmentToCartAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+# class DentalAppointmentToCartAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        data = request.data.copy()
-        user = request.user
+#     def post(self, request):
+#         data = request.data.copy()
+#         user = request.user
 
-        # ---------------------------------------------------------
-        # STEP 1: Fixed specialization for Dental
-        # ---------------------------------------------------------
-        specialization = get_object_or_404(DoctorSpeciality, name__iexact="Dentist")
+#         # ---------------------------------------------------------
+#         # STEP 1: Fixed specialization for Dental
+#         # ---------------------------------------------------------
+#         specialization = get_object_or_404(DoctorSpeciality, name__iexact="Dentist")
 
-        # ---------------------------------------------------------
-        # STEP 2: For whom (self / dependant)
-        # ---------------------------------------------------------
-        for_whom = data.get("for_whom")
-        if for_whom not in ["self", "dependant"]:
-            return Response({"error": "for_whom must be 'self' or 'dependant'."}, status=400)
+#         # ---------------------------------------------------------
+#         # STEP 2: For whom (self / dependant)
+#         # ---------------------------------------------------------
+#         for_whom = data.get("for_whom")
+#         if for_whom not in ["self", "dependant"]:
+#             return Response({"error": "for_whom must be 'self' or 'dependant'."}, status=400)
 
-        dependant = None
-        if for_whom == "dependant":
-            dependant_id = data.get("dependant_id")
-            if not dependant_id:
-                return Response({"error": "dependant_id is required"}, status=400)
-            dependant = get_object_or_404(Dependant, id=dependant_id, user=user)
-
-
-        consultation_fee = data.get("consultation_fee")
-        if not consultation_fee:
-            return Response({"error": "consultation_fee is required"}, status=400)
+#         dependant = None
+#         if for_whom == "dependant":
+#             dependant_id = data.get("dependant_id")
+#             if not dependant_id:
+#                 return Response({"error": "dependant_id is required"}, status=400)
+#             dependant = get_object_or_404(Dependant, id=dependant_id, user=user)
 
 
-        # ---------------------------------------------------------
-        # STEP 3: Validate vendor center
-        # ---------------------------------------------------------
-        center_id = data.get("dental_vendor_center_id")
-        if not center_id:
-            return Response({"error": "dental_vendor_center_id is required"}, status=400)
-
-        vendor_center = get_object_or_404(DentalVendorAddress, id=center_id)
-        vendor = vendor_center.vendor
+#         consultation_fee = data.get("consultation_fee")
+#         if not consultation_fee:
+#             return Response({"error": "consultation_fee is required"}, status=400)
 
 
-        consultation_fee = Decimal(
-            data.get("consultation_fee") or vendor_center.consultation_fee
-        )
-        # ---------------------------------------------------------
-        # STEP 4: Validate date & time
-        # ---------------------------------------------------------
-        from datetime import datetime
+#         # ---------------------------------------------------------
+#         # STEP 3: Validate vendor center
+#         # ---------------------------------------------------------
+#         center_id = data.get("dental_vendor_center_id")
+#         if not center_id:
+#             return Response({"error": "dental_vendor_center_id is required"}, status=400)
 
-        appointment_date = datetime.strptime(
-            data.get("appointment_date"), "%Y-%m-%d"
-            ).date()
-
-        appointment_time = datetime.strptime(
-            data.get("appointment_time"), "%I:%M %p"
-            ).time()
-
-        if not data.get("appointment_date") or not data.get("appointment_time"):
-            return Response({"error": "Appointment date and time are required."}, status=400)
-
-        try:
-            appointment_date = datetime.strptime(data.get("appointment_date"), "%Y-%m-%d").date()
-            appointment_time = datetime.strptime(data.get("appointment_time"), "%I:%M %p").time()
-        except ValueError:
-            return Response({"error": "Invalid date or time format"}, status=400)
-        # ---------------------------------------------------------
-        # STEP 5: Slot Check (inside cart only)
-        # ---------------------------------------------------------
-        slot_in_cart = CartItem.objects.filter(
-            user=user,
-            dental_vendor_centers=vendor_center,
-            appointment_date=appointment_date,
-            appointment_time=appointment_time,
-            item_type="dental_appointment"
-        ).exists()
-
-        if slot_in_cart:
-            return Response(
-                {"error": f"Slot already added to cart at {vendor_center.address} "
-                          f"on {appointment_date} at {appointment_time}"},
-                status=400
-            )
-
-        # ---------------------------------------------------------
-        # STEP 6: Get or create cart
-        # ---------------------------------------------------------
-        cart, _ = Cart.objects.get_or_create(user=user)
-
-        # ---------------------------------------------------------
-        # STEP 7: Create CartItem (NO Appointment model)
-        # ---------------------------------------------------------
-
-        price= vendor_center.consultation_fee
-        discount_amount=0
-        final_price= price-discount_amount
+#         vendor_center = get_object_or_404(DentalVendorAddress, id=center_id)
+#         vendor = vendor_center.vendor
 
 
+#         consultation_fee = Decimal(
+#             data.get("consultation_fee") or vendor_center.consultation_fee
+#         )
+#         # ---------------------------------------------------------
+#         # STEP 4: Validate date & time
+#         # ---------------------------------------------------------
+#         from datetime import datetime
 
-        cart_item = CartItem.objects.create(
-            cart=cart,
-            user=user,
-            item_type="dental_appointment",
+#         appointment_date = datetime.strptime(
+#             data.get("appointment_date"), "%Y-%m-%d"
+#             ).date()
 
-            vendor=vendor,
-            dental_vendor_centers=vendor_center,
-            specialization=specialization,
+#         appointment_time = datetime.strptime(
+#             data.get("appointment_time"), "%I:%M %p"
+#             ).time()
 
-            for_whom=for_whom,
-            dependant=dependant,
+#         if not data.get("appointment_date") or not data.get("appointment_time"):
+#             return Response({"error": "Appointment date and time are required."}, status=400)
 
-            patient_name=(
-                user.name or user.email
-                if for_whom == "self" else dependant.name
-            ),
+#         try:
+#             appointment_date = datetime.strptime(data.get("appointment_date"), "%Y-%m-%d").date()
+#             appointment_time = datetime.strptime(data.get("appointment_time"), "%I:%M %p").time()
+#         except ValueError:
+#             return Response({"error": "Invalid date or time format"}, status=400)
+#         # ---------------------------------------------------------
+#         # STEP 5: Slot Check (inside cart only)
+#         # ---------------------------------------------------------
+#         slot_in_cart = CartItem.objects.filter(
+#             user=user,
+#             dental_vendor_centers=vendor_center,
+#             appointment_date=appointment_date,
+#             appointment_time=appointment_time,
+#             item_type="dental_appointment"
+#         ).exists()
 
-            appointment_date=appointment_date,
-            appointment_time=appointment_time,
-            note=data.get("note"),
-            mode="In Person",
-            slot_confirmed=True, 
-            price=price,
-            discount_amount=0,
-            final_price=final_price,
+#         if slot_in_cart:
+#             return Response(
+#                 {"error": f"Slot already added to cart at {vendor_center.address} "
+#                           f"on {appointment_date} at {appointment_time}"},
+#                 status=400
+#             )
+
+#         # ---------------------------------------------------------
+#         # STEP 6: Get or create cart
+#         # ---------------------------------------------------------
+#         cart, _ = Cart.objects.get_or_create(user=user)
+
+#         # ---------------------------------------------------------
+#         # STEP 7: Create CartItem (NO Appointment model)
+#         # ---------------------------------------------------------
+
+#         price= vendor_center.consultation_fee
+#         discount_amount=0
+#         final_price= price-discount_amount
+
+
+
+#         cart_item = CartItem.objects.create(
+#             cart=cart,
+#             user=user,
+#             item_type="dental_appointment",
+
+#             vendor=vendor,
+#             dental_vendor_centers=vendor_center,
+#             specialization=specialization,
+
+#             for_whom=for_whom,
+#             dependant=dependant,
+
+#             patient_name=(
+#                 user.name or user.email
+#                 if for_whom == "self" else dependant.name
+#             ),
+
+#             appointment_date=appointment_date,
+#             appointment_time=appointment_time,
+#             note=data.get("note"),
+#             mode="In Person",
+#             slot_confirmed=True, 
+#             price=price,
+#             discount_amount=0,
+#             final_price=final_price,
 
             
-            created_by=user,
-            updated_by=user
-        )
+#             created_by=user,
+#             updated_by=user
+#         )
 
-        # ---------------------------------------------------------
-        # STEP 8: Add documents to cart item
-        # ---------------------------------------------------------
-        for f in request.FILES.getlist("documents"):
-            doc = ReportDocument.objects.create(file=f)
-            cart_item.documents.add(doc)
+#         # ---------------------------------------------------------
+#         # STEP 8: Add documents to cart item
+#         # ---------------------------------------------------------
+#         for f in request.FILES.getlist("documents"):
+#             doc = ReportDocument.objects.create(file=f)
+#             cart_item.documents.add(doc)
 
-        return Response(
-            {
-                "message": "Dental appointment added to cart",
-                "data": DentalAppointmentToCartSerializer(cart_item).data
-            },
-            status=201
-        )
-
-
-
-class EyeAppointmentToCartAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        data = request.data.copy()
-        user = request.user
-
-        # ---------------------------------------------------------
-        # STEP 1: Fixed specialization for Eye
-        # ---------------------------------------------------------
-        specialization = get_object_or_404(DoctorSpeciality, name__iexact="Dermatology")
-
-        # ---------------------------------------------------------
-        # STEP 2: For whom (self / dependant)
-        # ---------------------------------------------------------
-        for_whom = data.get("for_whom")
-        if for_whom not in ["self", "dependant"]:
-            return Response({"error": "for_whom must be 'self' or 'dependant'."}, status=400)
-
-        dependant = None
-        if for_whom == "dependant":
-            dependant_id = data.get("dependant_id")
-            if not dependant_id:
-                return Response({"error": "dependant_id is required"}, status=400)
-            dependant = get_object_or_404(Dependant, id=dependant_id, user=user)
-
-        consultation_fee = data.get("consultation_fee")
-        if not consultation_fee:
-            return Response({"error": "consultation_fee is required"}, status=400)
+#         return Response(
+#             {
+#                 "message": "Dental appointment added to cart",
+#                 "data": DentalAppointmentToCartSerializer(cart_item).data
+#             },
+#             status=201
+#         )
 
 
-        # ---------------------------------------------------------
-        # STEP 3: Validate vendor center
-        # ---------------------------------------------------------
-        center_id = data.get("eye_vendor_centers_id")
-        if not center_id:
-            return Response({"error": "eye_vendor_center_id is required"}, status=400)
 
-        vendor_center = get_object_or_404(EyeVendorAddress, id=center_id)
-        vendor = vendor_center.vendor
+# class EyeAppointmentToCartAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
 
-        consultation_fee = Decimal(
-            data.get("consultation_fee") or vendor_center.consultation_fee
-        ) 
+#     def post(self, request):
+#         data = request.data.copy()
+#         user = request.user
 
-        # ---------------------------------------------------------
-        # STEP 4: Validate date & time
-        # ---------------------------------------------------------
-        from datetime import datetime
+#         # ---------------------------------------------------------
+#         # STEP 1: Fixed specialization for Eye
+#         # ---------------------------------------------------------
+#         specialization = get_object_or_404(DoctorSpeciality, name__iexact="Dermatology")
 
-        appointment_date = datetime.strptime(
-            data.get("appointment_date"), "%Y-%m-%d"
-            ).date()
+#         # ---------------------------------------------------------
+#         # STEP 2: For whom (self / dependant)
+#         # ---------------------------------------------------------
+#         for_whom = data.get("for_whom")
+#         if for_whom not in ["self", "dependant"]:
+#             return Response({"error": "for_whom must be 'self' or 'dependant'."}, status=400)
 
-        appointment_time = datetime.strptime(
-            data.get("appointment_time"), "%I:%M %p"
-            ).time()
+#         dependant = None
+#         if for_whom == "dependant":
+#             dependant_id = data.get("dependant_id")
+#             if not dependant_id:
+#                 return Response({"error": "dependant_id is required"}, status=400)
+#             dependant = get_object_or_404(Dependant, id=dependant_id, user=user)
 
-        if not data.get("appointment_date") or not data.get("appointment_time"):
-            return Response({"error": "Appointment date and time are required."}, status=400)
+#         consultation_fee = data.get("consultation_fee")
+#         if not consultation_fee:
+#             return Response({"error": "consultation_fee is required"}, status=400)
 
-        try:
-            appointment_date = datetime.strptime(data.get("appointment_date"), "%Y-%m-%d").date()
-            appointment_time = datetime.strptime(data.get("appointment_time"), "%I:%M %p").time()
-        except ValueError:
-            return Response({"error": "Invalid date or time format"}, status=400)
 
-        # ---------------------------------------------------------
-        # STEP 5: Slot Check (inside cart only)
-        # ---------------------------------------------------------
-        slot_in_cart = CartItem.objects.filter(
-            user=user,
-            eye_vendor_centers=vendor_center,
-            appointment_date=appointment_date,
-            appointment_time=appointment_time,
-            item_type="eye_appointment"
-        ).exists()
+#         # ---------------------------------------------------------
+#         # STEP 3: Validate vendor center
+#         # ---------------------------------------------------------
+#         center_id = data.get("eye_vendor_centers_id")
+#         if not center_id:
+#             return Response({"error": "eye_vendor_center_id is required"}, status=400)
 
-        if slot_in_cart:
-            return Response(
-                {"error": f"Slot already added to cart at {vendor_center.address} "
-                          f"on {appointment_date} at {appointment_time}"},
-                status=400
-            )
+#         vendor_center = get_object_or_404(EyeVendorAddress, id=center_id)
+#         vendor = vendor_center.vendor
 
-        # ---------------------------------------------------------
-        # STEP 6: Get or create cart
-        # ---------------------------------------------------------
-        cart, _ = Cart.objects.get_or_create(user=user)
+#         consultation_fee = Decimal(
+#             data.get("consultation_fee") or vendor_center.consultation_fee
+#         ) 
+
+#         # ---------------------------------------------------------
+#         # STEP 4: Validate date & time
+#         # ---------------------------------------------------------
+#         from datetime import datetime
+
+#         appointment_date = datetime.strptime(
+#             data.get("appointment_date"), "%Y-%m-%d"
+#             ).date()
+
+#         appointment_time = datetime.strptime(
+#             data.get("appointment_time"), "%I:%M %p"
+#             ).time()
+
+#         if not data.get("appointment_date") or not data.get("appointment_time"):
+#             return Response({"error": "Appointment date and time are required."}, status=400)
+
+#         try:
+#             appointment_date = datetime.strptime(data.get("appointment_date"), "%Y-%m-%d").date()
+#             appointment_time = datetime.strptime(data.get("appointment_time"), "%I:%M %p").time()
+#         except ValueError:
+#             return Response({"error": "Invalid date or time format"}, status=400)
+
+#         # ---------------------------------------------------------
+#         # STEP 5: Slot Check (inside cart only)
+#         # ---------------------------------------------------------
+#         slot_in_cart = CartItem.objects.filter(
+#             user=user,
+#             eye_vendor_centers=vendor_center,
+#             appointment_date=appointment_date,
+#             appointment_time=appointment_time,
+#             item_type="eye_appointment"
+#         ).exists()
+
+#         if slot_in_cart:
+#             return Response(
+#                 {"error": f"Slot already added to cart at {vendor_center.address} "
+#                           f"on {appointment_date} at {appointment_time}"},
+#                 status=400
+#             )
+
+#         # ---------------------------------------------------------
+#         # STEP 6: Get or create cart
+#         # ---------------------------------------------------------
+#         cart, _ = Cart.objects.get_or_create(user=user)
 
     
-        # ---------------------------------------------------------
-        # STEP 7: Create CartItem (NO Appointment model)
-        # ---------------------------------------------------------
+#         # ---------------------------------------------------------
+#         # STEP 7: Create CartItem (NO Appointment model)
+#         # ---------------------------------------------------------
 
-        price= vendor_center.consultation_fee
-        discount_amount=0
-        final_price= price-discount_amount
+#         price= vendor_center.consultation_fee
+#         discount_amount=0
+#         final_price= price-discount_amount
 
 
-        cart_item = CartItem.objects.create(
-            cart=cart,
-            user=user,
-            item_type="eye_appointment",
+#         cart_item = CartItem.objects.create(
+#             cart=cart,
+#             user=user,
+#             item_type="eye_appointment",
 
-            vendor=vendor,
-            eye_vendor_centers=vendor_center,
-            specialization=specialization,
+#             vendor=vendor,
+#             eye_vendor_centers=vendor_center,
+#             specialization=specialization,
 
-            for_whom=for_whom,
-            dependant=dependant,
-            mode="In Person",
-            patient_name=(
-                user.name or user.email
-                if for_whom == "self" else dependant.name
-            ),
+#             for_whom=for_whom,
+#             dependant=dependant,
+#             mode="In Person",
+#             patient_name=(
+#                 user.name or user.email
+#                 if for_whom == "self" else dependant.name
+#             ),
 
-            appointment_date=appointment_date,
-            appointment_time=appointment_time,
-            note=data.get("note"),
-            price=price,
-            discount_amount=0,
-            final_price=final_price,
-            slot_confirmed=True,  
+#             appointment_date=appointment_date,
+#             appointment_time=appointment_time,
+#             note=data.get("note"),
+#             price=price,
+#             discount_amount=0,
+#             final_price=final_price,
+#             slot_confirmed=True,  
 
-            created_by=user,
-            updated_by=user
-        )
+#             created_by=user,
+#             updated_by=user
+#         )
 
-        # ---------------------------------------------------------
-        # STEP 8: Add documents
-        # ---------------------------------------------------------
-        for f in request.FILES.getlist("documents"):
-            doc = ReportDocument.objects.create(file=f)
-            cart_item.documents.add(doc)
+#         # ---------------------------------------------------------
+#         # STEP 8: Add documents
+#         # ---------------------------------------------------------
+#         for f in request.FILES.getlist("documents"):
+#             doc = ReportDocument.objects.create(file=f)
+#             cart_item.documents.add(doc)
 
-        return Response(
-            {
-                "message": "Eye appointment added to cart",
-                "data": EyeAppointmentToCartSerializer(cart_item).data
-            },
-            status=201
-        )
+#         return Response(
+#             {
+#                 "message": "Eye appointment added to cart",
+#                 "data": EyeAppointmentToCartSerializer(cart_item).data
+#             },
+#             status=201
+#         )
     
 
 
