@@ -54,6 +54,7 @@ urlpatterns = [
     path('api/women_health/' , include ('apps.women_health.urls')),
     path("api/payments/", include("apps.payments.urls")),
     path("api/notifications/", include("apps.notifications.urls")),
+    path("api/chatbot/", include("apps.chatbot.urls")),
 ]
 
 if settings.DEBUG:
