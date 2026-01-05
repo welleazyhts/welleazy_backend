@@ -700,10 +700,14 @@ class SelectDoctorAPIView(APIView):
                 {"error": "This doctor has no specialization assigned"},
                 status=400
             )
-
+        
+        selected_specialization = specializations.first()
         # Save in session
-        # request.session["selected_doctor_id"] = doctor.id
-        # request.session["selected_specialization_id"] = specializations.id
+        request.session["selected_doctor_id"] = doctor.id
+        request.session["selected_specialization_id"] = selected_specialization.id
+        request.session.modified =True
+
+        
 
         return Response({
             "message": "Doctor & specialization selected successfully",

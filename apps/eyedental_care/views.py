@@ -33,6 +33,7 @@ from apps.location.models import State, City
 from .models import EyeDentalCareBooking
 from .serializers import EyeDentalCareBookingSerializer
 from .serializers import EyeDentalCareBookingFinalSerializer
+from apps.common.permissions import ReadOnlyOrAuthenticated
 
 
 class SmallPagination(PageNumberPagination):
@@ -44,12 +45,24 @@ class EyeTreatmentViewSet(ModelViewSet):
     queryset = EyeTreatment.objects.all()
     serializer_class = EyeTreatmentSerializer
     pagination_class = SmallPagination
+    permission_classes=[ReadOnlyOrAuthenticated]
+
+    
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
 
 
 class DentalTreatmentViewSet(ModelViewSet):
     queryset = DentalTreatment.objects.all()
     serializer_class = DentalTreatmentSerializer
     pagination_class = SmallPagination
+    permission_classes=[ReadOnlyOrAuthenticated]
+
+    
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
 
 
 
