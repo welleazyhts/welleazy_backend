@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'apps.women_health',
     'apps.payments',
     'apps.notifications',
+    'apps.chatbot',
     
      # Third-party apps
     'rest_framework',
@@ -198,6 +199,12 @@ FAST2SMS_LANGUAGE = os.getenv("FAST2SMS_LANGUAGE")
 #Razorpay
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
+
+# OpenAI
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+# Gemini
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},

@@ -79,6 +79,12 @@ class RazorpayVerifyPaymentAPIView(APIView):
         order_info = client.order.fetch(order_id)
         cart_id = order_info["notes"].get("cart_id")
 
+        # Fetch payment details for mode/bank info
+        payment_info = client.payment.fetch(payment_id)
+        payment_mode = payment_info.get("method", "Unknown")
+        payment_bank = payment_info.get("bank")
+        payment_last4 = payment_info.get("last4")
+
         cart = get_object_or_404(Cart, id=cart_id)
         items = cart.items.all()
 
@@ -98,6 +104,12 @@ class RazorpayVerifyPaymentAPIView(APIView):
                 address=item.address,
                 note=item.note,
                 status="confirmed",
+                # Save Payment Info
+                payment_transaction_id=payment_id,
+                payment_mode=payment_mode,
+                payment_bank=payment_bank,
+                payment_last4=payment_last4,
+                payment_reference=order_id,
                 created_by=request.user,
                 updated_by=request.user
             )
@@ -112,7 +124,8 @@ class RazorpayVerifyPaymentAPIView(APIView):
             created.append({
                 "appointment_id": appt.id,
                 "diagnostic_center": appt.diagnostic_center.name,
-                "tests": [t.name for t in item.tests.all()]
+                "tests": [t.name for t in item.tests.all()],
+                "transaction_id": payment_id
             })
 
         # Empty cart after payment
@@ -133,3 +146,76 @@ class RazorpayPaymentPageView(TemplateView):
         
         context["access_token"] = self.request.GET.get("token", "")
         return context
+
+
+from django.db.models import Sum
+from .serializers import MyTransactionSerializer
+from apps.pharmacy.models import PharmacyOrder
+
+class MyTransactionsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        
+        # Fetch Appointments
+        appointments = AppointmentModel.objects.filter(user=user).select_related(
+            'invoice_detail', 
+            'doctor__doctor', 
+            'diagnostic_center'
+        ).order_by('-created_at')
+        
+        # Fetch Pharmacy Orders
+        pharmacy_orders = PharmacyOrder.objects.filter(user=user).order_by('-created_at')
+        
+        # Aggregated list for transactions
+        transactions_list = []
+        
+        total_spent = 0.0
+        total_pending = 0.0
+        
+        # Buckets (aligning with my_bookings)
+        COMPLETED_STATUS = ['completed', 'delivered', 'done', 'confirmed', 'paid']
+        PENDING_STATUS = ['pending', 'scheduled', 'booked', 'upcoming']
+
+        # Process Appointments
+        for appt in appointments:
+            appt_data = MyTransactionSerializer(appt).data
+            amount = float(appt_data.get('amount') or 0)
+            
+            if appt.status.lower() in COMPLETED_STATUS:
+                total_spent += amount
+            elif appt.status.lower() in PENDING_STATUS:
+                total_pending += amount
+                
+            transactions_list.append(appt_data)
+            
+        # Process Pharmacy Orders
+        for order in pharmacy_orders:
+            amount = float(order.total_amount or 0)
+            
+            if order.status.lower() in COMPLETED_STATUS:
+                total_spent += amount
+            elif order.status.lower() in PENDING_STATUS:
+                total_pending += amount
+                
+            transactions_list.append({
+                'id': order.id,
+                'transaction_id': order.order_id,
+                'title': f"Pharmacy Order {order.order_id}",
+                'amount': amount,
+                'date': order.ordered_date,
+                'status': order.status,
+                'payment_method': order.order_type
+            })
+
+        transactions_list.sort(key=lambda x: str(x['date']), reverse=True)
+
+        return Response({
+            "summary": {
+                "total_spent": round(total_spent, 2),
+                "refund": 0.0, # Not implemented yet
+                "pending": round(total_pending, 2)
+            },
+            "transactions": transactions_list
+        })
