@@ -5,10 +5,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import State, City
 from .serializers import StateSerializer, CitySerializer
+from apps.common.permissions import ReadOnlyOrAuthenticated
 
 
 class StateViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [ReadOnlyOrAuthenticated]
     serializer_class = StateSerializer
     queryset = State.objects.filter(deleted_at__isnull=True).order_by("name")
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
@@ -29,7 +30,7 @@ class StateViewSet(viewsets.ModelViewSet):
 
 
 class CityViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [ReadOnlyOrAuthenticated]
     serializer_class = CitySerializer
     queryset = City.objects.filter(deleted_at__isnull=True).order_by("name")
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]

@@ -4,8 +4,7 @@ from rest_framework.routers import DefaultRouter
 from .views import AddToCartAPIView,  ConfirmCheckoutAPIView, UserCartAPIView, CheckoutCartAPIView, AddPackageToCartAPIView , RemoveCartItemAPIView , ClearCartAPIView
 from .views import (
     AvailableLabSlotsAPIView,
-    SelectLabSlotAPIView,
-    RescheduleLabSlotAPIView,
+    
 )
 
 from .views import(
@@ -37,8 +36,8 @@ urlpatterns = [
     path("cart/item/<int:item_id>/remove/", RemoveCartItemAPIView.as_view(), name="cart-remove-item"),
     path("clear/", ClearCartAPIView.as_view(), name="cart-clear"),
     path("lab/slots/<int:center_id>/<str:date>/", AvailableLabSlotsAPIView.as_view()),
-    path("lab/cart/<int:cart_item_id>/select-slot/", SelectLabSlotAPIView.as_view()),
-    path("lab/cart/<int:cart_item_id>/reschedule/", RescheduleLabSlotAPIView.as_view()),
+    # path("lab/cart/<int:cart_item_id>/select-slot/", SelectLabSlotAPIView.as_view()),
+    # path("lab/cart/<int:cart_item_id>/reschedule/", RescheduleLabSlotAPIView.as_view()),
     path("reschedule/<int:cart_item_id>/",RescheduleAppointmentAPIView.as_view(),name="reschedule-appointment"),
     path("voucher/create/<int:appointment_id>/",CreateAppointmentVoucherAPIView.as_view(),name="create-appointment-voucher"),
 

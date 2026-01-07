@@ -15,6 +15,6 @@ class HealthPackageSerializer(serializers.ModelSerializer):
         model = HealthPackage
         fields = [
             'id', 'name', 'code', 'description', 'price', 'validity_till',
-            'active', 'tests', 'test_ids', 'created_at', 'updated_at','status',
+            'active', 'tests', 'test_ids', 'created_at', 'updated_at','status','package_type'
         ]
         read_only_fields = ['created_at', 'updated_at']

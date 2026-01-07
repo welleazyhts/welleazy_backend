@@ -7,7 +7,7 @@ class StateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = State
-        fields = ["id", "name", "country", "is_active", "created_at", "updated_at"]
+        fields = ["id", "name", "country", "is_active", "created_at", "updated_at" , "created_by", "updated_by"]
 
     def get_country(self, obj):
         return "India"
@@ -29,6 +29,8 @@ class CitySerializer(serializers.ModelSerializer):
             "is_active",
             "created_at",
             "updated_at",
+            "created_by",
+            "updated_by",
         ]
 
     def get_country(self, obj):

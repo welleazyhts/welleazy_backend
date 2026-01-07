@@ -22,7 +22,7 @@ from django.utils import timezone
 from django.db.models import Count
 from .models import DiagnosticCenter ,  ReportDocument
 from django.db import transaction
-from .serializers import DoctorAppointmentToCartSerializer , DentalAppointmentToCartSerializer , EyeAppointmentToCartSerializer , AppointmentVoucherSerializer
+from .serializers import DoctorAppointmentToCartSerializer , AppointmentVoucherSerializer
 from rest_framework.decorators import action
 from apps.consultation_filter.models import DoctorSpeciality
 
@@ -58,6 +58,27 @@ class AddToCartAPIView(APIView):
             estimated_price = sum((t.price or 0) for t in tests)
         except Exception:
             estimated_price = None
+            # ===== CHECK SAME DATE & TIME (ADD THIS ONLY) =====
+        appointment_date = data.get("appointment_date")
+        appointment_time = data.get("appointment_time")
+
+        already_exists = CartItem.objects.filter(
+            cart__user=request.user,
+            appointment_date=appointment_date,
+            appointment_time=appointment_time,
+        ).exists()
+
+        if already_exists:
+            return Response(
+                {
+                    "error": "You already have a lab test in cart for this date and time."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+# ===== END CHECK =====
+
 
         cart_item = CartItem(
             cart=cart,
@@ -69,7 +90,11 @@ class AddToCartAPIView(APIView):
             note=data.get('note'),
             price=estimated_price,
             created_by=request.user,
-            updated_by=request.user
+            updated_by=request.user,
+            appointment_date=appointment_date,
+            appointment_time=appointment_time,
+
+            
         )
         cart_item.save() 
         cart_item.tests.set(tests)
@@ -464,11 +489,72 @@ class AddPackageToCartAPIView(APIView):
             sponsored_package = SponsoredPackage.objects.get(id=data["package_id"])
             price = sponsored_package.price or 0
 
+
+        from datetime import datetime
+
+        appointment_date_str = data.get("appointment_date")
+        appointment_time_str = data.get("appointment_time")
+
+        if not appointment_date_str or not appointment_time_str:
+            return Response(
+                {"error": "Appointment date and time are required."},
+                status=400
+        )
+
+
+        try:
+            appointment_date = datetime.strptime(appointment_date_str, "%Y-%m-%d").date()
+            appointment_time = datetime.strptime(appointment_time_str, "%I:%M %p").time()
+        except ValueError:
+            return Response({"error": "Invalid date or time format"}, status=400)
+
+        existing_item=CartItem.objects.filter(
+            cart=cart,
+            diagnostic_center=dc,
+            appointment_date=appointment_date,
+            appointment_time=appointment_time,
+        ).first()
+
+        confirm_update = data.get("confirm_update", False)
+
+        if existing_item:
+            if not confirm_update:
+                return Response(
+                    {
+                        "message": "An appointment already exists for this diagnostic center at the selected time.",
+                        "action_required": "confirm_update",
+                        "existing_item": CartItemSerializer(existing_item).data
+                    },
+                    status=status.HTTP_409_CONFLICT
+                )
+            
+            existing_item.item_type = data["item_type"]
+            existing_item.health_package = health_package
+            existing_item.sponsored_package = sponsored_package
+            existing_item.price = price
+            existing_item.for_whom = data["for_whom"]
+            existing_item.dependant = dependant
+            existing_item.note = data.get("note")
+            existing_item.updated_by = request.user
+            existing_item.save()
+            existing_item.apply_discount()
+
+            return Response(
+                {
+                    "message": "Cart updated successfully",
+                    "data": CartItemSerializer(existing_item).data
+                },
+                status=status.HTTP_200_OK
+            )
+
+
         item = CartItem(
             cart=cart,
             item_type=data["item_type"],
             diagnostic_center=dc,
             for_whom=data["for_whom"],
+            appointment_date=appointment_date,
+            appointment_time=appointment_time,
             dependant=dependant,
             health_package=health_package,
             sponsored_package=sponsored_package,
@@ -700,10 +786,14 @@ class SelectDoctorAPIView(APIView):
                 {"error": "This doctor has no specialization assigned"},
                 status=400
             )
-
+        
+        selected_specialization = specializations.first()
         # Save in session
-        # request.session["selected_doctor_id"] = doctor.id
-        # request.session["selected_specialization_id"] = specializations.id
+        request.session["selected_doctor_id"] = doctor.id
+        request.session["selected_specialization_id"] = selected_specialization.id
+        request.session.modified =True
+
+        
 
         return Response({
             "message": "Doctor & specialization selected successfully",
@@ -1294,178 +1384,178 @@ class AvailableLabSlotsAPIView(APIView):
 
 
 
-class SelectLabSlotAPIView(APIView):
+# class SelectLabSlotAPIView(APIView):
 
-    def post(self, request, cart_item_id):
-        try:
-            item = CartItem.objects.get(id=cart_item_id, cart__user=request.user)
-        except CartItem.DoesNotExist:
-            return Response({"error": "Cart item not found"}, status=404)
+#     def post(self, request, cart_item_id):
+#         try:
+#             item = CartItem.objects.get(id=cart_item_id, cart__user=request.user)
+#         except CartItem.DoesNotExist:
+#             return Response({"error": "Cart item not found"}, status=404)
 
-        # Allowed item types
-        ALLOWED_TYPES = ["test", "health_package", "sponsored_package"]
+#         # Allowed item types
+#         ALLOWED_TYPES = ["test", "health_package", "sponsored_package"]
 
-        if item.item_type not in ALLOWED_TYPES:
-            return Response(
-                {"error": "Slot selection allowed only for Test, Health Package, and Sponsored Package"},
-                status=400
-            )
+#         if item.item_type not in ALLOWED_TYPES:
+#             return Response(
+#                 {"error": "Slot selection allowed only for Test, Health Package, and Sponsored Package"},
+#                 status=400
+#             )
 
-        date_str = request.data.get("date")
-        time_str = request.data.get("time")
+#         date_str = request.data.get("date")
+#         time_str = request.data.get("time")
 
-        if not date_str or not time_str:
-            return Response({"error": "Both date and time are required"}, status=400)
+#         if not date_str or not time_str:
+#             return Response({"error": "Both date and time are required"}, status=400)
 
-        # Convert date
-        try:
-            date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-        except:
-            return Response({"error": "Invalid date format"}, status=400)
+#         # Convert date
+#         try:
+#             date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+#         except:
+#             return Response({"error": "Invalid date format"}, status=400)
 
-        # Convert time
-        try:
-            time_obj = datetime.strptime(time_str, "%I:%M %p").time()
-        except:
-            return Response({"error": "Invalid time format"}, status=400)
+#         # Convert time
+#         try:
+#             time_obj = datetime.strptime(time_str, "%I:%M %p").time()
+#         except:
+#             return Response({"error": "Invalid time format"}, status=400)
 
-        # Past date check
-        if date_obj < date.today():
-            return Response({"error": "You cannot select past dates"}, status=400)
+#         # Past date check
+#         if date_obj < date.today():
+#             return Response({"error": "You cannot select past dates"}, status=400)
 
-        # Business hours: 7AM to 7PM
-        if time_obj < time(7, 0) or time_obj > time(19, 0):
-            return Response({"error": "Time must be between 7 AM and 7 PM"}, status=400)
+#         # Business hours: 7AM to 7PM
+#         if time_obj < time(7, 0) or time_obj > time(19, 0):
+#             return Response({"error": "Time must be between 7 AM and 7 PM"}, status=400)
 
-        # All share the same diagnostic center
-        center = item.diagnostic_center
-        if not center:
-            return Response({"error": "Diagnostic center not assigned"}, status=400)
+#         # All share the same diagnostic center
+#         center = item.diagnostic_center
+#         if not center:
+#             return Response({"error": "Diagnostic center not assigned"}, status=400)
 
-        # Generate available slots
-        slots = generate_time_slots_for_center(center, date_obj)
-        slot_times = [s["start_time"] for s in slots]
+#         # Generate available slots
+#         slots = generate_time_slots_for_center(center, date_obj)
+#         slot_times = [s["start_time"] for s in slots]
 
-        if time_obj not in slot_times:
-            return Response({"error": "Selected time not available for this center"}, status=400)
+#         if time_obj not in slot_times:
+#             return Response({"error": "Selected time not available for this center"}, status=400)
 
-        # ----------------------------------------------------
-        # GENERALIZED SLOT COUNT CHECK (FOR ALL ITEM TYPES)
-        # ----------------------------------------------------
-        with transaction.atomic():
+#         # ----------------------------------------------------
+#         # GENERALIZED SLOT COUNT CHECK (FOR ALL ITEM TYPES)
+#         # ----------------------------------------------------
+#         with transaction.atomic():
 
-            booked = CartItem.objects.filter(
-                diagnostic_center=center,
-                selected_date=date_obj,
-                selected_time=time_obj,
-                slot_confirmed=True
-            ).count()
+#             booked = CartItem.objects.filter(
+#                 diagnostic_center=center,
+#                 selected_date=date_obj,
+#                 selected_time=time_obj,
+#                 slot_confirmed=True
+#             ).count()
 
-            capacity = center.slot_capacity or 1
+#             capacity = center.slot_capacity or 1
 
-            if booked >= capacity:
-                return Response({"error": "Selected slot is fully booked"}, status=400)
+#             if booked >= capacity:
+#                 return Response({"error": "Selected slot is fully booked"}, status=400)
 
-        # Save the slot
-        item.selected_date = date_obj
-        item.selected_time = time_obj
-        item.slot_confirmed = True
-        item.save()
+#         # Save the slot
+#         item.selected_date = date_obj
+#         item.selected_time = time_obj
+#         item.slot_confirmed = True
+#         item.save()
 
-        return Response({
-            "message": "Slot selected successfully",
-            "cart_item_id": item.id,
-            "item_type": item.item_type,
-            "selected_date": item.selected_date.isoformat(),
-            "selected_time": item.selected_time.strftime("%I:%M %p")
-        }, status=200)
+#         return Response({
+#             "message": "Slot selected successfully",
+#             "cart_item_id": item.id,
+#             "item_type": item.item_type,
+#             "selected_date": item.selected_date.isoformat(),
+#             "selected_time": item.selected_time.strftime("%I:%M %p")
+#         }, status=200)
 
-class RescheduleLabSlotAPIView(APIView):
+# class RescheduleLabSlotAPIView(APIView):
 
-    def post(self, request, cart_item_id):
-        try:
-            item = CartItem.objects.select_related("diagnostic_center").get(
-                id=cart_item_id,
-                cart__user=request.user
-            )
-        except CartItem.DoesNotExist:
-            return Response({"error": "Cart item not found"}, status=404)
+#     def post(self, request, cart_item_id):
+#         try:
+#             item = CartItem.objects.select_related("diagnostic_center").get(
+#                 id=cart_item_id,
+#                 cart__user=request.user
+#             )
+#         except CartItem.DoesNotExist:
+#             return Response({"error": "Cart item not found"}, status=404)
 
-        # Allowed item types
-        ALLOWED_TYPES = ["test", "health_package", "sponsored_package"]
+#         # Allowed item types
+#         ALLOWED_TYPES = ["test", "health_package", "sponsored_package"]
 
-        if item.item_type not in ALLOWED_TYPES:
-            return Response(
-                {"error": "Only test, health package & sponsored package items support rescheduling"},
-                status=400
-            )
+#         if item.item_type not in ALLOWED_TYPES:
+#             return Response(
+#                 {"error": "Only test, health package & sponsored package items support rescheduling"},
+#                 status=400
+#             )
 
-        # Must have an existing slot to reschedule
-        if not item.selected_date or not item.selected_time:
-            return Response({"error": "Item has no existing slot selected"}, status=400)
+#         # Must have an existing slot to reschedule
+#         if not item.selected_date or not item.selected_time:
+#             return Response({"error": "Item has no existing slot selected"}, status=400)
 
-        # Extract new date & time
-        date_str = request.data.get("date")
-        time_str = request.data.get("time")
+#         # Extract new date & time
+#         date_str = request.data.get("date")
+#         time_str = request.data.get("time")
 
-        if not date_str or not time_str:
-            return Response({"error": "date and time are required"}, status=400)
+#         if not date_str or not time_str:
+#             return Response({"error": "date and time are required"}, status=400)
 
-        try:
-            new_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-            new_time = datetime.strptime(time_str, "%I:%M %p").time()
-        except ValueError:
-            return Response({"error": "Invalid date/time format"}, status=400)
+#         try:
+#             new_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+#             new_time = datetime.strptime(time_str, "%I:%M %p").time()
+#         except ValueError:
+#             return Response({"error": "Invalid date/time format"}, status=400)
 
-        center = item.diagnostic_center
-        if not center:
-            return Response({"error": "Diagnostic center not assigned"}, status=400)
+#         center = item.diagnostic_center
+#         if not center:
+#             return Response({"error": "Diagnostic center not assigned"}, status=400)
 
-        # Generate valid slots for this center
-        slots = generate_time_slots_for_center(center, new_date)
-        slot_times = [s["start_time"] for s in slots]
+#         # Generate valid slots for this center
+#         slots = generate_time_slots_for_center(center, new_date)
+#         slot_times = [s["start_time"] for s in slots]
 
-        if new_time not in slot_times:
-            return Response({"error": "Selected time not available for this center"}, status=400)
+#         if new_time not in slot_times:
+#             return Response({"error": "Selected time not available for this center"}, status=400)
 
-        # If user picked the same date/time → nothing to update
-        if item.selected_date == new_date and item.selected_time == new_time:
-            return Response({"message": "No change"}, status=200)
+#         # If user picked the same date/time → nothing to update
+#         if item.selected_date == new_date and item.selected_time == new_time:
+#             return Response({"message": "No change"}, status=200)
 
-        # Concurrency-safe booking block
-        with transaction.atomic():
+#         # Concurrency-safe booking block
+#         with transaction.atomic():
 
-            # Count already booked items for this slot
-            booked = CartItem.objects.filter(
-                diagnostic_center=center,
-                selected_date=new_date,
-                selected_time=new_time,
-                slot_confirmed=True
-            ).count()
+#             # Count already booked items for this slot
+#             booked = CartItem.objects.filter(
+#                 diagnostic_center=center,
+#                 selected_date=new_date,
+#                 selected_time=new_time,
+#                 slot_confirmed=True
+#             ).count()
 
-            # If the item already occupies this slot, subtract it once
-            # (allows rescheduling back to same slot safely)
-            if item.selected_date == new_date and item.selected_time == new_time:
-                booked = max(0, booked - 1)
+#             # If the item already occupies this slot, subtract it once
+#             # (allows rescheduling back to same slot safely)
+#             if item.selected_date == new_date and item.selected_time == new_time:
+#                 booked = max(0, booked - 1)
 
-            capacity = center.slot_capacity or 1
+#             capacity = center.slot_capacity or 1
 
-            if booked >= capacity:
-                return Response({"error": "Selected new slot is fully booked"}, status=400)
+#             if booked >= capacity:
+#                 return Response({"error": "Selected new slot is fully booked"}, status=400)
 
-            # Update slot
-            item.selected_date = new_date
-            item.selected_time = new_time
-            item.slot_confirmed = True
-            item.save()
+#             # Update slot
+#             item.selected_date = new_date
+#             item.selected_time = new_time
+#             item.slot_confirmed = True
+#             item.save()
 
-        return Response({
-            "message": "Slot rescheduled successfully",
-            "cart_item_id": item.id,
-            "item_type": item.item_type,
-            "selected_date": item.selected_date.isoformat(),
-            "selected_time": item.selected_time.strftime("%H:%M")
-        })
+#         return Response({
+#             "message": "Slot rescheduled successfully",
+#             "cart_item_id": item.id,
+#             "item_type": item.item_type,
+#             "selected_date": item.selected_date.isoformat(),
+#             "selected_time": item.selected_time.strftime("%H:%M")
+#         })
 
 
 
