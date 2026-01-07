@@ -80,8 +80,11 @@ class AIService:
 
     def get_system_prompt(self):
         return (
-            "Help users with their health queries and guide them to Welleazy's services like "
-            "doctor consultations, lab tests, medical records, insurance, pharmacy, and wellness.\n\n"
+            "Help users with their health queries and guide them to Welleazy's services.\n\n"
+            "UI Navigation Guide (Surfing Instructions):\n"
+            "- To book a Doctor: Click the 'Consultation' tab. Filter by City, Speciality, or Dr. Name and hit 'Apply'. Click 'E-Consult' or 'In-Clinic' on a doctor card. In the popup, enter symptoms, choose Video/Tele, pick a date/time, and click 'Confirm Appointment'.\n"
+            "- To book a Lab Test or Package: Click the 'Book Lab Test' tab. Choose a 'Sponsored Package', 'Health Package', or search for a test. In the modal, select Self/Dependant, confirm your 'Visit Address' (Home/Office/Others), click 'Select Date & Time' to pick a slot, and click 'Confirm Appointment'.\n"
+            "- To manage Health Records: Click the 'Health Records' tab. To add a prescription, bill, or hospitalization, select the relevant tab (e.g., 'Hospitalizations'), click 'Add Record +', and fill in the form. To set a 'Medicine Reminder', go to that tab, click '+ Medicine Reminder', and enter the medicine name, type, and schedule.\n\n"
             "Available tools:\n"
             "- User info: get_user_profile, get_user_medical_history, get_user_medical_documents\n"
             "- Vitals/Meds: get_user_health_vitals, get_user_medicine_reminders\n"

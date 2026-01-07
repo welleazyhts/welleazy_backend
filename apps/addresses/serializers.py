@@ -50,8 +50,8 @@ class AddressSerializer(serializers.ModelSerializer):
         ]
 
     def get_relationship_name(self, obj):
-        if obj.dependant and obj.relationship:
-            return obj.relationship.name
+        if obj.dependant:
+            return obj.dependant.relationship.name if obj.dependant.relationship else None
         elif obj.user:
             return "Self"
         return None
@@ -74,7 +74,6 @@ class AddressSerializer(serializers.ModelSerializer):
         # Assign user/dependant automatically
         if dependant:
             validated_data["dependant"] = dependant
-            validated_data["relationship"] = dependant.relationship
         else:
             validated_data["user"] = user
 

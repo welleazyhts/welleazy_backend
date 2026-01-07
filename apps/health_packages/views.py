@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
 import requests
-
+from rest_framework.decorators import action
 from .models import HealthPackage
 from .serializers import HealthPackageSerializer
 
@@ -133,3 +133,7 @@ class HealthPackageViewSet(viewsets.ModelViewSet):
         queryset = queryset.order_by("id")
         serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["get"])
+    def choices(self, request):
+        return Response(dict(HealthPackage.HEALTH_PACKAGE_TYPES))

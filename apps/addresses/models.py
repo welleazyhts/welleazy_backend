@@ -21,7 +21,6 @@ class Address(BaseModel):
     #Stores address for user or dependant
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="addresses", null=True, blank=True)
     dependant = models.ForeignKey(Dependant, on_delete=models.CASCADE, related_name="addresses", null=True, blank=True)
-    relationship = models.ForeignKey(RelationshipType, on_delete=models.SET_NULL, null=True, blank=True)
     address_type = models.ForeignKey(AddressType, on_delete=models.SET_NULL, null=True)
     address_line1 = models.CharField(max_length=255)
     address_line2 = models.CharField(max_length=255, blank=True, null=True)
@@ -50,7 +49,4 @@ class Address(BaseModel):
         return f"{self.address_type} address of {target}"
 
     def save(self, *args, **kwargs):
-        # Automatically set relationship for dependant
-        if self.dependant and not self.relationship:
-            self.relationship = self.dependant.relationship
         super().save(*args, **kwargs)
