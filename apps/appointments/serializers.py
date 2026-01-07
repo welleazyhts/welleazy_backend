@@ -118,7 +118,7 @@ class CartItemSerializer(serializers.ModelSerializer):
             "health_package", "health_package_id",
             "sponsored_package" , "sponsored_package_id",
             "doctor" , "doctor_id",
-            "doctor" , "doctor_id",
+            "appointment_date" , "appointment_time",
             "for_whom", "dependant", "dependant_id",
             "address_id", "note", "price", "discount_amount", "final_price", "created_at",
         ]
@@ -275,6 +275,9 @@ class AddPackageToCartSerializer(serializers.Serializer):
     for_whom = serializers.ChoiceField(choices=CartItem.FOR_WHOM_CHOICES, default="self")
     dependant_id = serializers.IntegerField(required=False, allow_null=True)
     note = serializers.CharField(required=False, allow_blank=True)
+    appointment_date = serializers.CharField(required=True)
+    appointment_time = serializers.CharField(required=True)
+    confirm_update = serializers.BooleanField(required=False, default=False)
 
     def validate(self, data):
         try:
@@ -490,69 +493,69 @@ class MedicalReportSerializer(serializers.ModelSerializer):
 # EYE & DENTAL APPOINTMENTS----
 
 
-class EyeAppointmentToCartSerializer(serializers.Serializer):
-    eye_vendor_centers_id = serializers.IntegerField()
-    dependant_name=serializers.CharField(source='dependant.name',read_only=True)
-    appointment_date = serializers.DateField()
-    appointment_time = serializers.TimeField()
-    consultation_fee = serializers.DecimalField(max_digits=8, decimal_places=2, required=False)
+# class EyeAppointmentToCartSerializer(serializers.Serializer):
+#     eye_vendor_centers_id = serializers.IntegerField()
+#     dependant_name=serializers.CharField(source='dependant.name',read_only=True)
+#     appointment_date = serializers.DateField()
+#     appointment_time = serializers.TimeField()
+#     consultation_fee = serializers.DecimalField(max_digits=8, decimal_places=2, required=False)
 
-    for_whom = serializers.ChoiceField(choices=CartItem.FOR_WHOM_CHOICES, default="self")
-    dependant_id = serializers.IntegerField(required=False, allow_null=True)
+#     for_whom = serializers.ChoiceField(choices=CartItem.FOR_WHOM_CHOICES, default="self")
+#     dependant_id = serializers.IntegerField(required=False, allow_null=True)
 
-    note = serializers.CharField(required=False, allow_blank=True)
+#     note = serializers.CharField(required=False, allow_blank=True)
 
-    def validate(self, data):
-        user = self.context["request"].user
+#     def validate(self, data):
+#         user = self.context["request"].user
 
-        # Vendor center validation
-        center_id = data["eye_vendor_centers_id"]
-        try:
-            vendor_center = EyeVendorAddress.objects.get(id=center_id)
-        except EyeVendorAddress.DoesNotExist:
-            raise serializers.ValidationError("Invalid eye vendor center.")
+#         # Vendor center validation
+#         center_id = data["eye_vendor_centers_id"]
+#         try:
+#             vendor_center = EyeVendorAddress.objects.get(id=center_id)
+#         except EyeVendorAddress.DoesNotExist:
+#             raise serializers.ValidationError("Invalid eye vendor center.")
 
-        data["vendor_center"] = vendor_center
-        data["vendor"] = vendor_center.vendor
+#         data["vendor_center"] = vendor_center
+#         data["vendor"] = vendor_center.vendor
 
-        # dependant validation
-        if data["for_whom"] == "dependant":
-            if not data.get("dependant_id"):
-                raise serializers.ValidationError("dependant_id is required for dependant booking.")
-            try:
-                Dependant.objects.get(id=data["dependant_id"], user=user)
-            except Dependant.DoesNotExist:
-                raise serializers.ValidationError("Dependant not found.")
+#         # dependant validation
+#         if data["for_whom"] == "dependant":
+#             if not data.get("dependant_id"):
+#                 raise serializers.ValidationError("dependant_id is required for dependant booking.")
+#             try:
+#                 Dependant.objects.get(id=data["dependant_id"], user=user)
+#             except Dependant.DoesNotExist:
+#                 raise serializers.ValidationError("Dependant not found.")
 
-        return data
+#         return data
     
-    def get_consultation_fee(self, obj):
-        doctor = self.context.get("doctor_obj")
-        return doctor.consultation_fee if doctor else None     
+#     def get_consultation_fee(self, obj):
+#         doctor = self.context.get("doctor_obj")
+#         return doctor.consultation_fee if doctor else None     
     
     
 
-    class Meta:
-        model = Appointment
-        fields = [
-            "patient_name",
-            "dependant_name",
-            "vendor_name",
-            "status",
-            "for_whom",
-            "dependant_id",
-            "appointment_date",
-            "appointment_time",
-            "consultation_fee",
-            "note",
-            "eye_vendor_centers_id",
-        ]
+#     class Meta:
+#         model = Appointment
+#         fields = [
+#             "patient_name",
+#             "dependant_name",
+#             "vendor_name",
+#             "status",
+#             "for_whom",
+#             "dependant_id",
+#             "appointment_date",
+#             "appointment_time",
+#             "consultation_fee",
+#             "note",
+#             "eye_vendor_centers_id",
+#         ]
         
-        extra_kwargs = {
-            "patient_name": {"required": True},
-            "appointment_date": {"required": True},
-            "appointment_time": {"required": True},
-        }
+#         extra_kwargs = {
+#             "patient_name": {"required": True},
+#             "appointment_date": {"required": True},
+#             "appointment_time": {"required": True},
+#         }
     
     # def create(self, validated_data):
     #     # Extract the vendor center ID (not a model field)
@@ -572,67 +575,67 @@ class EyeAppointmentToCartSerializer(serializers.Serializer):
     #     return appointment
 
 
-class DentalAppointmentToCartSerializer(serializers.Serializer):
-    dental_vendor_centers_id = serializers.IntegerField()
-    dependant_name=serializers.CharField(source='dependant.name',read_only=True)
-    appointment_date = serializers.DateField()
-    appointment_time = serializers.TimeField()
-    consultation_fee = serializers.DecimalField(max_digits=8, decimal_places=2, required=False)
-    for_whom = serializers.ChoiceField(choices=CartItem.FOR_WHOM_CHOICES, default="self")
-    dependant_id = serializers.IntegerField(required=False, allow_null=True)
-    vendor_name=serializers.CharField(source='vendor.name',read_only=True)
-    note = serializers.CharField(required=False, allow_blank=True)
+# class DentalAppointmentToCartSerializer(serializers.Serializer):
+#     dental_vendor_centers_id = serializers.IntegerField()
+#     dependant_name=serializers.CharField(source='dependant.name',read_only=True)
+#     appointment_date = serializers.DateField()
+#     appointment_time = serializers.TimeField()
+#     consultation_fee = serializers.DecimalField(max_digits=8, decimal_places=2, required=False)
+#     for_whom = serializers.ChoiceField(choices=CartItem.FOR_WHOM_CHOICES, default="self")
+#     dependant_id = serializers.IntegerField(required=False, allow_null=True)
+#     vendor_name=serializers.CharField(source='vendor.name',read_only=True)
+#     note = serializers.CharField(required=False, allow_blank=True)
 
-    def validate(self, data):
-        user = self.context["request"].user
+#     def validate(self, data):
+#         user = self.context["request"].user
 
-        # Vendor center validation
-        center_id = data["dental_vendor_centers_id"]
-        try:
-            vendor_center = DentalVendorAddress.objects.get(id=center_id)
-        except DentalVendorAddress.DoesNotExist:
-            raise serializers.ValidationError("Invalid dental vendor center.")
+#         # Vendor center validation
+#         center_id = data["dental_vendor_centers_id"]
+#         try:
+#             vendor_center = DentalVendorAddress.objects.get(id=center_id)
+#         except DentalVendorAddress.DoesNotExist:
+#             raise serializers.ValidationError("Invalid dental vendor center.")
 
-        data["vendor_center"] = vendor_center
-        data["vendor"] = vendor_center.vendor
+#         data["vendor_center"] = vendor_center
+#         data["vendor"] = vendor_center.vendor
 
-        # dependant validation
-        if data["for_whom"] == "dependant":
-            if not data.get("dependant_id"):
-                raise serializers.ValidationError("dependant_id is required for dependant booking.")
-            try:
-                Dependant.objects.get(id=data["dependant_id"], user=user)
-            except Dependant.DoesNotExist:
-                raise serializers.ValidationError("Dependant not found.")
+#         # dependant validation
+#         if data["for_whom"] == "dependant":
+#             if not data.get("dependant_id"):
+#                 raise serializers.ValidationError("dependant_id is required for dependant booking.")
+#             try:
+#                 Dependant.objects.get(id=data["dependant_id"], user=user)
+#             except Dependant.DoesNotExist:
+#                 raise serializers.ValidationError("Dependant not found.")
 
-        return data
+#         return data
     
-    def get_consultation_fee(self, obj):
-        doctor = self.context.get("doctor_obj")
-        return doctor.consultation_fee if doctor else None     
+#     def get_consultation_fee(self, obj):
+#         doctor = self.context.get("doctor_obj")
+#         return doctor.consultation_fee if doctor else None     
     
 
 
-    class Meta:
-        model = Appointment
-        fields = [
-            "patient_name",
-            "dependant_name",
+#     class Meta:
+#         model = Appointment
+#         fields = [
+#             "patient_name",
+#             "dependant_name",
   
-            "vendor_name",
-            "for_whom",
-            "dependant_id",
-            "appointment_date",
-            "appointment_time",
-            "consultation_fee",
-            "note",
-            "dental_vendor_centers_id",
-        ]
-        extra_kwargs = {
-            "patient_name": {"required": True},
-            "appointment_date": {"required": True},
-            "appointment_time": {"required": True},
-        }
+#             "vendor_name",
+#             "for_whom",
+#             "dependant_id",
+#             "appointment_date",
+#             "appointment_time",
+#             "consultation_fee",
+#             "note",
+#             "dental_vendor_centers_id",
+#         ]
+#         extra_kwargs = {
+#             "patient_name": {"required": True},
+#             "appointment_date": {"required": True},
+#             "appointment_time": {"required": True},
+#         }
 
 
     # def create(self, validated_data):
