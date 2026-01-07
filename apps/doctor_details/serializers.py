@@ -2,15 +2,19 @@ from rest_framework import serializers
 from .models import DoctorPersonalDetails,DoctorProfessionalDetails
 from apps.consultation_filter.serializers import VendorSerializer, LanguageSerializer , DoctorSpecialitySerializer
 from apps.consultation_filter.models import Vendor,Language,DoctorSpeciality
+from apps.location.models import City
 
 class DoctorPersonalDetailsSerializer(serializers.ModelSerializer):
+    city = serializers.PrimaryKeyRelatedField(
+        queryset=City.objects.all()
+    )
    
 
     class Meta:
         model = DoctorPersonalDetails
         fields = [
             "id", "full_name", "gender", "dob","age","blood_group",
-            "phone", "email", "address", "profile_photo" 
+            "phone", "email", "address", "profile_photo", "city",
         ]
 
 

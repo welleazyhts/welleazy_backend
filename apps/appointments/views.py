@@ -58,6 +58,27 @@ class AddToCartAPIView(APIView):
             estimated_price = sum((t.price or 0) for t in tests)
         except Exception:
             estimated_price = None
+            # ===== CHECK SAME DATE & TIME (ADD THIS ONLY) =====
+        appointment_date = data.get("appointment_date")
+        appointment_time = data.get("appointment_time")
+
+        already_exists = CartItem.objects.filter(
+            cart__user=request.user,
+            appointment_date=appointment_date,
+            appointment_time=appointment_time,
+        ).exists()
+
+        if already_exists:
+            return Response(
+                {
+                    "error": "You already have a lab test in cart for this date and time."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+# ===== END CHECK =====
+
 
         cart_item = CartItem(
             cart=cart,
@@ -69,7 +90,11 @@ class AddToCartAPIView(APIView):
             note=data.get('note'),
             price=estimated_price,
             created_by=request.user,
-            updated_by=request.user
+            updated_by=request.user,
+            appointment_date=appointment_date,
+            appointment_time=appointment_time,
+
+            
         )
         cart_item.save() 
         cart_item.tests.set(tests)
