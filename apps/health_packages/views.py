@@ -91,4 +91,45 @@ class HealthPackageViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
         
-    
+    def list(self, request):
+        package_type = request.query_params.get("package_type")
+
+        client_api_url = getattr(settings, "CLIENT_HEALTH_PACKAGE_API_URL", None)
+        if client_api_url:
+            try:
+                headers = {}
+                token = getattr(settings, "CLIENT_API_TOKEN", None)
+                if token:
+                    headers["Authorization"] = f"Bearer {token}"
+
+                response = requests.get(client_api_url, headers=headers, timeout=10)
+                response.raise_for_status()
+                data = response.json()
+
+                formatted = [
+                    {
+                        "id": item.get("id"),
+                        "name": item.get("package_name") or item.get("name"),
+                        "description": item.get("description"),
+                        "price": item.get("price"),
+                        "validity_till": item.get("validity_till"),
+                   }
+                    for item in data
+                ]
+                return Response(formatted, status=status.HTTP_200_OK)
+
+            except requests.RequestException as e:
+                return Response(
+                    {"error": f"Failed to fetch external API: {e}"},
+                    status=status.HTTP_502_BAD_GATEWAY,
+                )
+
+    # 🔹 LOCAL DB FILTERING
+        queryset = self.get_queryset().filter(active=True)
+
+        if package_type:
+            queryset = queryset.filter(package_type__iexact=package_type)
+
+        queryset = queryset.order_by("id")
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
