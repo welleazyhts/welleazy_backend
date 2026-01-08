@@ -61,9 +61,10 @@ class AddToCartAPIView(APIView):
         except Exception:
             estimated_price = None
 
-        # ===== CHECK SAME DATE & TIME (ADDED ONLY THIS PART) =====
+        # ===== CHECK SAME DATE & TIME (MODIFIED FOR CONFIRM UPDATE) =====
         appointment_date = data.get("appointment_date")
         appointment_time = data.get("appointment_time")
+        confirm_update = data.get("confirm_update", False)
 
         # ---- 12 HOUR (AM/PM) TO 24 HOUR CONVERSION ----
         if isinstance(appointment_time, str):
@@ -73,30 +74,53 @@ class AddToCartAPIView(APIView):
                 ).time()
             except ValueError:
                 return Response(
-                    {
-                        "error": "Invalid time format. Use HH:MM AM/PM (e.g. 01:30 PM)"
-                    },
+                    {"error": "Invalid time format. Use HH:MM AM/PM (e.g. 01:30 PM)"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-        # ---- END TIME CONVERSION ----
 
-        already_exists = CartItem.objects.filter(
-            cart__user=request.user,
+        existing_item = CartItem.objects.filter(
+            cart=cart,
             appointment_date=appointment_date,
             appointment_time=appointment_time,
-        ).exists()
+        ).first()
 
-        if already_exists:
+        if existing_item:
+            if not confirm_update:
+                return Response(
+                    {
+                        "message": "An item already exists in your cart for the selected time.",
+                        "action_required": "confirm_update",
+                        "existing_item": CartItemSerializer(existing_item).data
+                    },
+                    status=status.HTTP_409_CONFLICT
+                )
+            
+            # Update existing cart item
+            existing_item.item_type = "test"
+            existing_item.diagnostic_center = dc
+            existing_item.visit_type = vt
+            existing_item.for_whom = data['for_whom']
+            existing_item.dependant = dependant
+            existing_item.address = address
+            existing_item.note = data.get('note')
+            existing_item.price = estimated_price
+            existing_item.updated_by = request.user
+            existing_item.save()
+            existing_item.tests.set(tests)
+            existing_item.apply_discount()
+
             return Response(
                 {
-                    "error": "You already have a lab test in cart for this date and time."
+                    "message": "Cart item updated successfully",
+                    "data": CartItemSerializer(existing_item).data
                 },
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_200_OK
             )
-        # ===== END CHECK =====
 
+        # Create new cart item
         cart_item = CartItem(
             cart=cart,
+            item_type="test",
             diagnostic_center=dc,
             visit_type=vt,
             for_whom=data['for_whom'],

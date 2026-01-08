@@ -228,6 +228,7 @@ class AddToCartSerializer(serializers.Serializer):
     note = serializers.CharField(required=False, allow_blank=True)
     appointment_date = serializers.DateField()
     appointment_time = serializers.CharField()
+    confirm_update = serializers.BooleanField(required=False, default=False)
 
 
     def validate(self, data):
