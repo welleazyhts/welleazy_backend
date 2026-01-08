@@ -18,12 +18,6 @@ class AddressSerializer(serializers.ModelSerializer):
     state_name = serializers.CharField(source="state.name", read_only=True)
     city_name = serializers.CharField(source="city.name", read_only=True)
 
-    relationship = serializers.PrimaryKeyRelatedField(
-        queryset=RelationshipType.objects.all(),
-        required=False,
-        allow_null=True
-    )
-
     relationship_name = serializers.SerializerMethodField()
     person_name = serializers.SerializerMethodField()
 

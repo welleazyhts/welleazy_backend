@@ -75,6 +75,7 @@ class DiagnosticCenterFilterAPIView(ListAPIView):
         area = self.request.query_params.get("area")
         name = self.request.query_params.get("name")
         visit_type = self.request.query_params.get("visit_type")
+        test_ids = self.request.query_params.get("test_ids")
         sort_price = self.request.query_params.get("sort_price")  # "low" or "high"
 
         if pincode:
@@ -88,6 +89,17 @@ class DiagnosticCenterFilterAPIView(ListAPIView):
 
         if visit_type:
             queryset = queryset.filter(visit_types__id=visit_type)
+
+        if test_ids:
+            # Assume test_ids is a comma-separated string of IDs
+            try:
+                id_list = [id.strip() for id in test_ids.split(",") if id.strip()]
+                if id_list:
+                    # Filter DCs that have ALL of the selected tests
+                    for tid in id_list:
+                        queryset = queryset.filter(tests__id=tid)
+            except ValueError:
+                pass
 
         # --- Sorting by price (lowest or highest) ---
         if sort_price:
