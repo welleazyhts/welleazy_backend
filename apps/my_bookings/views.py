@@ -724,7 +724,7 @@ class LabTestVoucherView(APIView):
             "id": obj.id,
             "type": "labtest",
             "patient_name":request.user.get_username(),
-            "status": obj.status,
+            "status": "active" if str(obj.active).lower() == "true" else "inactive",
             "booked_date": obj.created_at.date(),
             "created_at": obj.created_at,
         }

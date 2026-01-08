@@ -573,69 +573,6 @@ class MedicalReportSerializer(serializers.ModelSerializer):
     #         Service_type="eye",
     #         **validated_data
     #     )
-
-    #     return appointment
-
-
-# class DentalAppointmentToCartSerializer(serializers.Serializer):
-#     dental_vendor_centers_id = serializers.IntegerField()
-#     dependant_name=serializers.CharField(source='dependant.name',read_only=True)
-#     appointment_date = serializers.DateField()
-#     appointment_time = serializers.TimeField()
-#     consultation_fee = serializers.DecimalField(max_digits=8, decimal_places=2, required=False)
-#     for_whom = serializers.ChoiceField(choices=CartItem.FOR_WHOM_CHOICES, default="self")
-#     dependant_id = serializers.IntegerField(required=False, allow_null=True)
-#     vendor_name=serializers.CharField(source='vendor.name',read_only=True)
-#     note = serializers.CharField(required=False, allow_blank=True)
-
-#     def validate(self, data):
-#         user = self.context["request"].user
-
-#         # Vendor center validation
-#         center_id = data["dental_vendor_centers_id"]
-#         try:
-#             vendor_center = DentalVendorAddress.objects.get(id=center_id)
-#         except DentalVendorAddress.DoesNotExist:
-#             raise serializers.ValidationError("Invalid dental vendor center.")
-
-#         data["vendor_center"] = vendor_center
-#         data["vendor"] = vendor_center.vendor
-
-#         # dependant validation
-#         if data["for_whom"] == "dependant":
-#             if not data.get("dependant_id"):
-#                 raise serializers.ValidationError("dependant_id is required for dependant booking.")
-#             try:
-#                 Dependant.objects.get(id=data["dependant_id"], user=user)
-#             except Dependant.DoesNotExist:
-#                 raise serializers.ValidationError("Dependant not found.")
-
-#         return data
-    
-#     def get_consultation_fee(self, obj):
-#         doctor = self.context.get("doctor_obj")
-#         return doctor.consultation_fee if doctor else None     
-    
-
-
-#     class Meta:
-#         model = Appointment
-#         fields = [
-#             "patient_name",
-#             "dependant_name",
-  
-#             "vendor_name",
-#             "for_whom",
-#             "dependant_id",
-#             "appointment_date",
-#             "appointment_time",
-#             "consultation_fee",
-#             "note",
-#             "dental_vendor_centers_id",
-#         ]
-#         extra_kwargs = {
-#             "patient_name": {"required": True},
-#             "appointment_date": {"required": True},
 #             "appointment_time": {"required": True},
 #         }
 

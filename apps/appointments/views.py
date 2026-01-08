@@ -172,7 +172,7 @@ class CheckoutCartAPIView(APIView):
                 }
 
 
-            # EYE -DENTAL DETASILS-----
+            # EYE -DENTAL DETAILS-----
 
             # eye_dental_info = None
             # if item.item_type in ["eye_appointment", "dental_appointment"]:

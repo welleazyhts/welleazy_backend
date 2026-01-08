@@ -8,7 +8,8 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 import uuid
-from apps.dependants.models import Dependant 
+from apps.dependants.models import Dependant
+from apps.location.models import City, State 
 
 User = settings.AUTH_USER_MODEL
 
@@ -18,8 +19,8 @@ class GymCenter(models.Model):
     type = models.CharField(max_length=64, blank=True, null=True)  # e.g. GX
     business_line = models.CharField(max_length=128, blank=True, null=True)  # e.g. ELITE
     address = models.TextField(blank=True)
-    city = models.CharField(max_length=128, blank=True)
-    state = models.CharField(max_length=128, blank=True)
+    city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True)
+    state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True, blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     phone = models.CharField(max_length=32, blank=True, null=True)
@@ -65,8 +66,8 @@ class Voucher(models.Model):
     dependant = models.ForeignKey(Dependant, on_delete=models.SET_NULL, blank=True, null=True)
     contact_number = models.CharField(max_length=32, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
-    city = models.CharField(max_length=128, blank=True, null=True)
-    state=models.CharField(max_length=128, blank=True, null=True)
+    city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True)
+    state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True, blank=True)
     address = models.CharField(max_length=1024, blank=True, null=True)
 
     # business fields

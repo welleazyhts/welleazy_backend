@@ -2,11 +2,23 @@ from rest_framework import serializers
 from .models import GymCenter, GymPackage, Voucher, Dependant
 from django.contrib.auth import get_user_model
 from apps.dependants.models import Dependant
+from apps.location.models import City, State
+from django.utils import timezone
 
 User = get_user_model()
 
 class GymCenterSerializer(serializers.ModelSerializer):
     logo=serializers.ImageField(use_url=True)
+    city = serializers.PrimaryKeyRelatedField(
+        queryset=City.objects.all(),
+        required=False,
+        allow_null=True
+    )
+    state = serializers.PrimaryKeyRelatedField(
+        queryset=State.objects.all(),
+        required=False,
+        allow_null=True
+    )
 
     class Meta:
         model = GymCenter
@@ -33,8 +45,12 @@ class VoucherCreateSerializer(serializers.ModelSerializer):
     
     dependant_id = serializers.IntegerField(required=False, write_only=True)
     dependant = DependantSerializer(required=False)
-    package_id = serializers.IntegerField(write_only=True)
-    gym_center_id = serializers.IntegerField(write_only=True)
+    package_id = serializers.IntegerField(required=False)
+    gym_center_id = serializers.IntegerField(required=False)
+    city_id=serializers.IntegerField(required=False, write_only=True)
+    state_id=serializers.IntegerField(required=False, write_only=True)
+    city_name = serializers.CharField(source="city.name",read_only= True)
+    state_name = serializers.CharField(source="state.name",read_only= True)
 
     class Meta:
         model = Voucher
@@ -46,8 +62,8 @@ class VoucherCreateSerializer(serializers.ModelSerializer):
             "gym_center_id",
             "contact_number",
             "email",
-            "city",
-            "state",
+            "city_id", "city_name",
+            "state_id", "state_name",
             "address",
             "amount_paid",
             "currency",
@@ -64,6 +80,8 @@ class VoucherCreateSerializer(serializers.ModelSerializer):
 
         package_id = validated_data.get("package_id")
         gym_center_id = validated_data.get("gym_center_id")
+        
+      
 
         if not package_id:
             raise serializers.ValidationError({"package_id": "This field is required."})
@@ -72,6 +90,19 @@ class VoucherCreateSerializer(serializers.ModelSerializer):
 
         package = GymPackage.objects.get(id=package_id)
         gym_center = GymCenter.objects.get(id=gym_center_id)
+        city= None
+        state= None
+
+        city_id = validated_data.pop("city_id", None)
+        state_id = validated_data.pop("state_id", None)
+        
+        if city_id:
+            city = City.objects.get(id=city_id)
+
+        if state_id:
+            state = State.objects.get(id=state_id)
+        
+
 
         dependant = None
         if validated_data.get('dependant_id'):
@@ -89,13 +120,14 @@ class VoucherCreateSerializer(serializers.ModelSerializer):
             dependant=dependant,
             contact_number=validated_data.get("contact_number"),
             email=validated_data.get("email"),
-            city=validated_data.get("city"),
-            state=validated_data.get("state") , 
+            city=city,
+            state=state,
             address=validated_data.get("address"),
             amount_paid=validated_data.get("amount_paid", package.discounted_price),
             currency=validated_data.get("currency", "INR"),
             status="pending"
         )
+        voucher.refresh_from_db()
         return voucher
 
 
@@ -132,4 +164,7 @@ class VoucherDetailSerializer(serializers.ModelSerializer):
 
  
     def get_voucher_datetime(self, obj):
-        return obj.created_at.strftime("%m/%d/%Y %I:%M:%S %p")
+        if not obj.created_at:
+            return None
+        local_time = timezone.localtime(obj.created_at)
+        return local_time.strftime("%m/%d/%Y %I:%M:%S %p")
