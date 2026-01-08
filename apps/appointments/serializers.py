@@ -119,7 +119,7 @@ class CartItemSerializer(serializers.ModelSerializer):
             "sponsored_package" , "sponsored_package_id",
             "doctor" , "doctor_id",
             "appointment_date","appointment_time",
-            "appointment_date" , "appointment_time",
+            
             "for_whom", "dependant", "dependant_id",
             "address_id", "note", "price", "discount_amount", "final_price", "created_at",
         ]
@@ -227,7 +227,9 @@ class AddToCartSerializer(serializers.Serializer):
     address_id = serializers.IntegerField(required=False, allow_null=True)
     note = serializers.CharField(required=False, allow_blank=True)
     appointment_date = serializers.DateField()
-    appointment_time = serializers.TimeField()
+    appointment_time = serializers.CharField()
+    confirm_update = serializers.BooleanField(required=False, default=False)
+
 
     def validate(self, data):
         # fetch objects and validate

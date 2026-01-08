@@ -35,7 +35,7 @@ class ChatMessageAPIView(APIView):
         ChatMessage.objects.create(session=session, role='user', content=content)
 
         # 2. Get AI Response
-        ai_service = AIService()
+        ai_service = AIService(user=request.user)
         
         # Fetch last 10 messages for context
         history_msgs = ChatMessage.objects.filter(session=session).order_by('-created_at')[:10]

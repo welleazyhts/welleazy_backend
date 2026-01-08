@@ -40,7 +40,6 @@ class InsurancePolicyRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
             deleted_at__isnull=True,
         ).order_by("-created_at")
         qs = filter_by_effective_user(qs, self.request)
-        return qs
 
         owner_type = self.request.query_params.get("policy_owner_type")
         if owner_type:

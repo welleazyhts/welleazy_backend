@@ -108,7 +108,6 @@ class DependantAddressListCreateView(generics.ListCreateAPIView):
         serializer.save(
             user=None,
             dependant=dependant,
-            relationship=dependant.relationship,
         )
 
 
@@ -189,7 +188,6 @@ class UnifiedAddressListCreateView(generics.ListCreateAPIView):
             serializer.save(
                 user=None,
                 dependant=dependant,
-                relationship=dependant.relationship
             )
         else:
             # Creating address for main user

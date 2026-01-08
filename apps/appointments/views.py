@@ -45,43 +45,82 @@ class AddToCartAPIView(APIView):
         dc = DiagnosticCenter.objects.get(id=data['diagnostic_center_id'])
         vt = VisitType.objects.get(id=data['visit_type_id'])
         tests = Test.objects.filter(id__in=data['test_ids'])
+
         dependant = None
         if not data['for_whom'] == "self":
             dependant = Dependant.objects.get(id=data['dependant_id'])
+
         address = None
         if 'address_id' in data and data['address_id']:
             address = Address.objects.get(id=data['address_id'])
 
-        # optional estimate price as sum of test prices (center price override logic could be added)
+        # optional estimate price
         estimated_price = None
         try:
             estimated_price = sum((t.price or 0) for t in tests)
         except Exception:
             estimated_price = None
-            # ===== CHECK SAME DATE & TIME (ADD THIS ONLY) =====
+
+        # ===== CHECK SAME DATE & TIME (MODIFIED FOR CONFIRM UPDATE) =====
         appointment_date = data.get("appointment_date")
         appointment_time = data.get("appointment_time")
+        confirm_update = data.get("confirm_update", False)
 
-        already_exists = CartItem.objects.filter(
-            cart__user=request.user,
+        # ---- 12 HOUR (AM/PM) TO 24 HOUR CONVERSION ----
+        if isinstance(appointment_time, str):
+            try:
+                appointment_time = datetime.strptime(
+                    appointment_time.strip(), "%I:%M %p"
+                ).time()
+            except ValueError:
+                return Response(
+                    {"error": "Invalid time format. Use HH:MM AM/PM (e.g. 01:30 PM)"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        existing_item = CartItem.objects.filter(
+            cart=cart,
             appointment_date=appointment_date,
             appointment_time=appointment_time,
-        ).exists()
+        ).first()
 
-        if already_exists:
+        if existing_item:
+            if not confirm_update:
+                return Response(
+                    {
+                        "message": "An item already exists in your cart for the selected time.",
+                        "action_required": "confirm_update",
+                        "existing_item": CartItemSerializer(existing_item).data
+                    },
+                    status=status.HTTP_409_CONFLICT
+                )
+            
+            # Update existing cart item
+            existing_item.item_type = "test"
+            existing_item.diagnostic_center = dc
+            existing_item.visit_type = vt
+            existing_item.for_whom = data['for_whom']
+            existing_item.dependant = dependant
+            existing_item.address = address
+            existing_item.note = data.get('note')
+            existing_item.price = estimated_price
+            existing_item.updated_by = request.user
+            existing_item.save()
+            existing_item.tests.set(tests)
+            existing_item.apply_discount()
+
             return Response(
                 {
-                    "error": "You already have a lab test in cart for this date and time."
+                    "message": "Cart item updated successfully",
+                    "data": CartItemSerializer(existing_item).data
                 },
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_200_OK
             )
 
-
-# ===== END CHECK =====
-
-
+        # Create new cart item
         cart_item = CartItem(
             cart=cart,
+            item_type="test",
             diagnostic_center=dc,
             visit_type=vt,
             for_whom=data['for_whom'],
@@ -93,12 +132,12 @@ class AddToCartAPIView(APIView):
             updated_by=request.user,
             appointment_date=appointment_date,
             appointment_time=appointment_time,
-
-            
         )
-        cart_item.save() 
+
+        cart_item.save()
         cart_item.tests.set(tests)
-        cart_item.apply_discount() 
+        cart_item.apply_discount()
+
         out = CartItemSerializer(cart_item).data
         return Response(
             {
@@ -107,6 +146,7 @@ class AddToCartAPIView(APIView):
             },
             status=status.HTTP_201_CREATED
         )
+
 
 class UserCartAPIView(APIView):
     permission_classes = [IsAuthenticated]
