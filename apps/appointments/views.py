@@ -61,12 +61,10 @@ class AddToCartAPIView(APIView):
         except Exception:
             estimated_price = None
 
-        # ===== CHECK SAME DATE & TIME (MODIFIED FOR CONFIRM UPDATE) =====
         appointment_date = data.get("appointment_date")
         appointment_time = data.get("appointment_time")
         confirm_update = data.get("confirm_update", False)
 
-        # ---- 12 HOUR (AM/PM) TO 24 HOUR CONVERSION ----
         if isinstance(appointment_time, str):
             try:
                 appointment_time = datetime.strptime(
@@ -465,7 +463,7 @@ class ConfirmCheckoutAPIView(APIView):
                 })
 
             # ==========================================================
-            # 5️⃣ SPONSORED PACKAGE APPOINTMENT
+            # SPONSORED PACKAGE APPOINTMENT
             # ==========================================================
             elif item.item_type == "sponsored_package" and item.sponsored_package:
                 appt = Appointment.objects.create(
