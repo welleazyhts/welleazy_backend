@@ -38,8 +38,6 @@ class AddressSerializer(serializers.ModelSerializer):
             "state", "state_name",
             "city", "city_name",
 
-            "relationship",
-
             "address_line1",
             "address_line2",
             "landmark",
