@@ -4,7 +4,7 @@ from apps.common.models import BaseModel
 
 
 class MedicineReminder(BaseModel):
-    # --- choices (same as before) ---
+    # choices
     MEDICINE_TYPE_CHOICES = (
         ("syrup", "Syrup"),
         ("tablet", "Tablet"),
@@ -53,7 +53,7 @@ class MedicineReminder(BaseModel):
         ("none", "No relation"),
     )
 
-    # --- main fields ---
+    # main fields
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

@@ -9,7 +9,7 @@ from django.core.validators import RegexValidator
 # Create your models here.
 
 
-# DOCTOR SPECIALIZATIONS-----
+# DOCTOR SPECIALIZATIONS
 class DoctorSpeciality(BaseModel):
     name=models.CharField(max_length=255,unique=True)
     description=models.TextField(blank=True, null=True)
@@ -24,7 +24,7 @@ class DoctorSpeciality(BaseModel):
         return self.name
 
 
-# LANGUAGE SELECTION----
+# LANGUAGE SELECTION
 
 class Language(BaseModel):
     name = models.CharField(max_length=100, unique=True)
@@ -44,10 +44,10 @@ class UserLanguagePreference(models.Model):
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.username} → {self.language}"
+        return f"{self.user.username} -> {self.language}"
 
 
-    # PINCODES---
+    # PINCODES
 
 class Pincode(BaseModel):
     code = models.CharField(max_length=6, unique=True, validators=[RegexValidator(r'^\d{6}$', 'Enter a valid 6-digit pincode')])
@@ -65,7 +65,7 @@ class Pincode(BaseModel):
 
 
 
-    # VENDOR LIST---
+    # VENDOR LIST
 
 class Vendor(BaseModel):
     name = models.CharField(max_length=255, unique=True)

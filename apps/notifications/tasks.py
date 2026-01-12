@@ -27,7 +27,7 @@ def create_scheduled_notification(user_id, title, message):
     return "OK"
 
 
-# ---------- APPOINTMENT REMINDERS TASK ----------
+# APPOINTMENT REMINDERS TASK
 @shared_task
 def send_upcoming_appointment_reminders():
 
@@ -63,7 +63,7 @@ def send_upcoming_appointment_reminders():
         appt.save(update_fields=["reminder_sent"])
 
 
-# ---------- CARE PROGRAM REMINDERS TASK ----------
+# CARE PROGRAM REMINDERS TASK
 
 # @shared_task
 # def send_upcoming_care_program_reminders():
@@ -95,7 +95,7 @@ def send_upcoming_appointment_reminders():
 #         cp.save(update_fields=["reminder_sent"])
 
 
-# ---------- PHARMACY DELIVERY REMINDERS TASK ----------
+# PHARMACY DELIVERY REMINDERS TASK
 
 @shared_task
 def send_upcoming_pharmacy_delivery_reminders():

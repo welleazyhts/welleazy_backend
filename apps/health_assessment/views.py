@@ -50,7 +50,7 @@ class HealthAssessmentViewSet(SaveUserMixin, viewsets.ModelViewSet):
             return HealthAssessmentCreateSerializer
         return HealthAssessmentSerializer
 
-    # ---------- create: start new HRA ----------
+    # create: start new HRA
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
@@ -65,7 +65,7 @@ class HealthAssessmentViewSet(SaveUserMixin, viewsets.ModelViewSet):
             },
             status=status.HTTP_201_CREATED
         )
-    # ---------- partial update (save any step) ----------
+    # partial update (save any step)
     def partial_update(self, request, *args, **kwargs):
 
         instance = self.get_object()
@@ -111,7 +111,7 @@ class HealthAssessmentViewSet(SaveUserMixin, viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
 
-    # ---------- soft delete ----------
+    # soft delete
     def destroy(self, request, *args, **kwargs):
         hra = self.get_object()
         hra.deleted_at = timezone.now()
@@ -121,7 +121,7 @@ class HealthAssessmentViewSet(SaveUserMixin, viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
         
-    # ---------- prefill (self / dependant) ----------
+    # prefill (self / dependant)
     @action(detail=False, methods=["get"])
     def prefill(self, request):
 
@@ -172,7 +172,7 @@ class HealthAssessmentViewSet(SaveUserMixin, viewsets.ModelViewSet):
             "relationship": rel_name,
         })
 
-    # ---------- choices for dropdowns/sliders ----------
+    # choices for dropdowns/sliders
     @action(detail=False, methods=["get"])
     def choices(self, request):
         m = HealthAssessment
@@ -195,7 +195,7 @@ class HealthAssessmentViewSet(SaveUserMixin, viewsets.ModelViewSet):
             "work_stress_reasons": dict(m.WORK_STRESS_REASON_CHOICES),
         })
 
-    # ---------- final submit ----------
+    # final submit
     @action(detail=True, methods=["post"])
     def submit(self, request, pk=None):
 

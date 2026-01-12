@@ -1,8 +1,4 @@
 from django.shortcuts import render
-
-# Create your views here.
-
-
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -26,7 +22,7 @@ from .utils import generate_coupon_code, generate_coupon_name
 
 
 
-#---- CLIENT API -------
+# CLIENT API
 
 class SyncPharmacyDataAPIView(APIView):
     def get(self, request):
@@ -46,7 +42,7 @@ class SyncPharmacyDataAPIView(APIView):
         return Response({"message": "Synced successfully"})
 
 
-# -------- BANNERS ----------
+# BANNERS
 class PharmacyBannerListAPIView(generics.ListAPIView):
     queryset = PharmacyBanner.objects.all().order_by("-created_at")
     serializer_class = PharmacyBannerSerializer
@@ -90,7 +86,7 @@ class DeletePharmacyBannerAPIView(APIView):
 
 
 
-# -------- VENDORS ----------
+# VENDORS
 class PharmacyVendorListAPIView(generics.ListAPIView):
     queryset = PharmacyVendor.objects.all()
     serializer_class = PharmacyVendorSerializer
@@ -172,16 +168,16 @@ class VendorSyncAPIView(APIView):
         except PharmacyVendor.DoesNotExist:
             return Response({"error": "Vendor not found"}, status=404)
 
-        # ---- FUTURE: integrate client API request ----
+        # FUTURE: integrate client API request
         # response = requests.get(api_url)
-        # Parse data → Sync → Create products
+        # Parse data -> Sync -> Create products
         # 
         return Response({"message": "Vendor sync scheduled/placeholder"})
 
 
 
 
-# -------- CATEGORIES ----------
+# CATEGORIES
 class PharmacyCategoryListAPIView(generics.ListAPIView):
     queryset = PharmacyCategory.objects.all()
     serializer_class = PharmacyCategorySerializer
@@ -222,7 +218,7 @@ class DeleteCategoryAPIView(APIView):
 
 
 
-# ------------MEDICINE FILTER ------------
+# MEDICINE FILTER
 
 class PharmacyMedicineListAPIView(generics.ListAPIView):
     queryset = Medicine.objects.all()
@@ -243,19 +239,19 @@ class PharmacyMedicineFilterAPIView(APIView):
 
         queryset = Medicine.objects.all()
 
-        # 🔍 Search filter
+        # Search filter
         if search:
             queryset = queryset.filter(name__icontains=search)
 
-        # 🏷 Category filter
+        # Category filter
         if category:
             queryset = queryset.filter(category_id=category)
 
-        # 🏪 Vendor filter
+        # Vendor filter
         if vendor:
             queryset = queryset.filter(vendor_id=vendor)
 
-        # 🔽 Sorting
+        # Sorting
         if sort == "price_low":
             queryset = queryset.order_by("selling_price")
         elif sort == "price_high":
@@ -263,7 +259,7 @@ class PharmacyMedicineFilterAPIView(APIView):
         elif sort == "name":
             queryset = queryset.order_by("name")
 
-        # 📄 Pagination
+        # Pagination
         paginator = Paginator(queryset, page_size)
         page_obj = paginator.get_page(page)
 
@@ -316,7 +312,7 @@ class MedicineUpdateAPIView(APIView):
         except Medicine.DoesNotExist:
             return Response({"error": "Medicine not found"}, status=404)
 
-        # --- DUPLICATE CHECK ---
+        # DUPLICATE CHECK
         new_name = request.data.get("name", medicine.name)
         new_vendor = request.data.get("vendor", medicine.vendor_id)
 
@@ -331,7 +327,7 @@ class MedicineUpdateAPIView(APIView):
                 status=400
             )
 
-        # --- APPLY UPDATE ---
+        # APPLY UPDATE
         serializer = MedicineSerializer(medicine, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -410,7 +406,7 @@ class MedicineDetailsUpdateAPIView(APIView):
 
 
 
-#---------APPOLO MEDICINE COUPON GENERATION-------
+# APPOLO MEDICINE COUPON GENERATION
 
 
 class CreateMedicineCouponAPIView(APIView):
@@ -441,7 +437,7 @@ class CreateMedicineCouponAPIView(APIView):
         relationship = request.data.get("relationship")
         document = request.FILES.get("document")
 
-        # ⭐ Validate mandatory fields
+        # Validate mandatory fields
         if not name:
             return Response({"error": "Name is required"}, status=400)
         if not email:
@@ -457,11 +453,11 @@ class CreateMedicineCouponAPIView(APIView):
         if not medicine_name:
             return Response({"error": "Medicine name is required"}, status=400)
 
-        # ⭐ Dependant: relationship is mandatory
+        # Dependant: relationship is mandatory
         if coupon_type == "dependent" and not relationship:
             return Response({"error": "Relationship is required for dependant"}, status=400)
 
-        # ⭐ Check if medicine exists for vendor
+        # Check if medicine exists for vendor
         medicine_exists = Medicine.objects.filter(
             name__iexact=medicine_name,
             vendor=vendor
@@ -473,7 +469,7 @@ class CreateMedicineCouponAPIView(APIView):
                 status=404
             )
         
-          # ⭐ DUPLICATE COUPON CHECK
+          # DUPLICATE COUPON CHECK
         duplicate = MedicineCoupon.objects.filter(
             user=request.user,
             vendor=vendor,

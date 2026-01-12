@@ -39,7 +39,7 @@ class DependantSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'relationship', 'dob']
 
 
-#  NO DISPLAY CONTENTS-----
+# NO DISPLAY CONTENTS
 class VoucherCreateSerializer(serializers.ModelSerializer):
     booking_for = serializers.ChoiceField(choices=[('self', 'Self'), ('dependant','Dependant')])
     
@@ -131,7 +131,7 @@ class VoucherCreateSerializer(serializers.ModelSerializer):
         return voucher
 
 
-# ONLY DISPLAY CONTENTS------
+# ONLY DISPLAY CONTENTS
 class VoucherDetailSerializer(serializers.ModelSerializer):
     voucher_id = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()

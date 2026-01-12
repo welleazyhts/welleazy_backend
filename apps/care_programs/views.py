@@ -31,7 +31,7 @@ class CareProgramBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
         ).order_by("-created_at")
         return filter_by_effective_user(queryset, self.request)
 
-    # ---------- CREATE ----------
+    # CREATE
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         payload = CareProgramBookingPayloadSerializer(data=request.data)
@@ -86,7 +86,7 @@ class CareProgramBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
         )
 
 
-    # ---------- UPDATE ----------
+    # UPDATE
     @transaction.atomic
     def update(self, request, *args, **kwargs):
         booking = self.get_object()
@@ -105,7 +105,7 @@ class CareProgramBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK
         )
-    # ---------- SOFT DELETE ----------
+    # SOFT DELETE
     def destroy(self, request, *args, **kwargs):
         booking = self.get_object()
         booking.deleted_at = timezone.now()
@@ -114,7 +114,7 @@ class CareProgramBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
             {"message": "Booking deleted successfully"},
             status=status.HTTP_200_OK
         )
-    # ---------- OPTIONS (SELF + DEPENDANTS) ----------
+    # OPTIONS (SELF + DEPENDANTS)
     @action(detail=False, methods=["get"], url_path="options")
     def booking_options(self, request):
 
@@ -203,7 +203,7 @@ class CareProgramBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
             booking.address_text = addr.address_line1 + ", " + (addr.address_line2 or "") + ", " + (addr.landmark or "") + "-" + addr.pincode
             return
 
-        # CASE B: Manual address provided → PRIORITY over default
+        # CASE B: Manual address provided -> PRIORITY over default
         if validated.get("state") or validated.get("city") or validated.get("address_text"):
             state_obj = State.objects.filter(id=validated.get("state")).first()
             city_obj = City.objects.filter(id=validated.get("city")).first()
@@ -214,7 +214,7 @@ class CareProgramBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
             booking.address_text = validated.get("address_text", "")
             return
 
-        # CASE C: No user input → fallback to default address
+        # CASE C: No user input -> fallback to default address
         if booking.for_whom == "self":
             default_addr = self._get_default_home_address_for_user(user)
         else:
@@ -227,7 +227,7 @@ class CareProgramBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
             booking.address_text = default_addr.address_line1 + ", " + (default_addr.address_line2 or "") + ", " + (default_addr.landmark or "") + "-" + default_addr.pincode
             return
 
-        # CASE D: No address available at all → require manual input
+        # CASE D: No address available at all -> require manual input
         raise ValidationError({
             "address_text": "No address found. Please enter a manual address (state, city, address_text)."
         })

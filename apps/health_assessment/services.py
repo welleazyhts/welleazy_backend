@@ -22,11 +22,11 @@ class HealthAssessmentReportService:
 
         story = []
 
-        # ---------- Title ----------
+        # Title
         story.append(Paragraph(f"Health Assessment Report #{hra.id}", title_style))
         story.append(Spacer(1, 0.25 * inch))
 
-        # ---------- Basic Info ----------
+        # Basic Info
         user_name = getattr(hra.user, "name", None) or hra.user.email
         for_whom = "Self" if hra.for_whom == "self" else (hra.dependant.name if hra.dependant else "Unknown")
 
@@ -37,7 +37,7 @@ class HealthAssessmentReportService:
         story.append(Paragraph(f"Generated at: {localtime().strftime('%Y-%m-%d %H:%M')}", normal))
         story.append(Spacer(1, 0.25 * inch))
 
-        # ---------- Summary of Inputs ----------
+        # Summary of Inputs
         story.append(Paragraph("<b>Summary of Your Inputs</b>", heading_style))
         story.append(Spacer(1, 0.15 * inch))
 
@@ -52,7 +52,7 @@ class HealthAssessmentReportService:
                     story.append(Paragraph(f"- {line}", normal))
             story.append(Spacer(1, 0.15 * inch))
 
-        # ---------- Advice ----------
+        # Advice
         advice_lines = cls._build_advice(hra)
 
         story.append(Spacer(1, 0.2 * inch))
@@ -81,7 +81,7 @@ class HealthAssessmentReportService:
         def display(val, display_func):
             return display_func() if val not in (None, "", False) else None
 
-        # ---- Step 3 & 4: Mood + Basic profile ----
+        # Step 3 & 4: Mood + Basic profile
         lines = []
 
         if hra.mood_today:
@@ -105,7 +105,7 @@ class HealthAssessmentReportService:
 
         sections.append(("Mood & Basic Profile", lines))
 
-        # ---- Step 5 & 6: Presenting illness + Past history ----
+        # Step 5 & 6: Presenting illness + Past history
         lines = []
         if hra.presenting_illness:
             if hra.presenting_illness == "other" and hra.presenting_illness_other:
@@ -133,7 +133,7 @@ class HealthAssessmentReportService:
 
         sections.append(("Current Symptoms & Past Medical History", lines))
 
-        # ---- Step 7: Sleep ----
+        # Step 7: Sleep
         lines = []
         if hra.sleep_hours:
             lines.append(f"Sleep duration: {hra.get_sleep_hours_display()}")
@@ -155,7 +155,7 @@ class HealthAssessmentReportService:
 
         sections.append(("Sleep Pattern", lines))
 
-        # ---- Step 8: Eating habits ----
+        # Step 8: Eating habits
         lines = []
         if hra.junk_food_freq:
             lines.append(f"Junk food frequency: {dict(HealthAssessment.FREQ5_CHOICES).get(hra.junk_food_freq)}")
@@ -177,7 +177,7 @@ class HealthAssessmentReportService:
 
         sections.append(("Eating Habits", lines))
 
-        # ---- Step 9: Drinking habits (Alcohol) ----
+        # Step 9: Drinking habits (Alcohol)
         lines = []
         if hra.alcohol_current is not None:
             if hra.alcohol_current:
@@ -202,7 +202,7 @@ class HealthAssessmentReportService:
 
         sections.append(("Alcohol Use", lines))
 
-        # ---- Step 10: Smoking / tobacco ----
+        # Step 10: Smoking / tobacco
         lines = []
         if hra.tobacco_current is not None:
             if hra.tobacco_current:
@@ -225,7 +225,7 @@ class HealthAssessmentReportService:
 
         sections.append(("Smoking / Tobacco Use", lines))
 
-        # ---- Step 11: Family history & medicines ----
+        # Step 11: Family history & medicines
         lines = []
         if hra.family_chronic_illness is not None:
             if hra.family_chronic_illness:
@@ -234,7 +234,7 @@ class HealthAssessmentReportService:
                 for rec in hra.family_illness_records.all():
                     dep_name = rec.dependant.name if rec.dependant else "Family member"
                     disease = disease_labels.get(rec.disease, rec.disease)
-                    lines.append(f"  • {dep_name}: {disease}")
+                    lines.append(f"  - {dep_name}: {disease}")
             else:
                 lines.append("No significant family history reported")
 
@@ -255,7 +255,7 @@ class HealthAssessmentReportService:
 
         sections.append(("Family History & Medications", lines))
 
-        # ---- Step 12: Bowel / bladder ----
+        # Step 12: Bowel / bladder
         lines = []
         if hra.difficulty_urine is not None:
             if hra.difficulty_urine:
@@ -274,7 +274,7 @@ class HealthAssessmentReportService:
 
         sections.append(("Bowel & Bladder", lines))
 
-        # ---- Step 13: Fitness ----
+        # Step 13: Fitness
         lines = []
         if hra.stretch_duration:
             lines.append(f"Stretching activity: {dict(HealthAssessment.DURATION4_CHOICES).get(hra.stretch_duration)}")
@@ -289,7 +289,7 @@ class HealthAssessmentReportService:
 
         sections.append(("Physical Activity & Fitness", lines))
 
-        # ---- Step 14: Mental wellness ----
+        # Step 14: Mental wellness
         lines = []
         if any([
             hra.low_interest, hra.depressed,
@@ -297,21 +297,21 @@ class HealthAssessmentReportService:
         ]):
             lines.append("Some concerns reported in mood/interest/energy/anxiety:")
             if hra.low_interest:
-                lines.append("  • Reduced interest or pleasure in activities")
+                lines.append("  - Reduced interest or pleasure in activities")
             if hra.depressed:
-                lines.append("  • Feeling down, depressed, or hopeless")
+                lines.append("  - Feeling down, depressed, or hopeless")
             if hra.sleep_appetite_issue:
-                lines.append("  • Issues with sleep or appetite")
+                lines.append("  - Issues with sleep or appetite")
             if hra.low_energy:
-                lines.append("  • Low energy or fatigue")
+                lines.append("  - Low energy or fatigue")
             if hra.anxious:
-                lines.append("  • Feeling anxious or worried often")
+                lines.append("  - Feeling anxious or worried often")
         else:
             lines.append("No significant mental wellness concerns reported")
 
         sections.append(("Mental Wellness", lines))
 
-        # ---- Step 15: Work stress ----
+        # Step 15: Work stress
         lines = []
         if hra.work_stress_affecting_life is not None:
             if hra.work_stress_affecting_life:
@@ -332,7 +332,7 @@ class HealthAssessmentReportService:
         # This is not a diagnosis, only lifestyle & checkup suggestions.
         advice = []
 
-        # -------- Mood (Step 3) --------
+        # Mood (Step 3)
         if hra.mood_today in (1, 2):
             advice.append(
                 "You reported feeling low today. Try to prioritise rest, enjoyable activities, and talk to someone you trust. "
@@ -347,7 +347,7 @@ class HealthAssessmentReportService:
                 "You reported a good mood. Continue habits that support this – such as regular sleep, movement, and meaningful social connections."
             )
 
-        # -------- Weight / BMI (Step 4) --------
+        # Weight / BMI (Step 4)
         if hra.bmi == "underweight":
             advice.append(
                 "Your BMI falls in the underweight range. A nutrition-focused consultation can help ensure you are getting enough calories and nutrients, "
@@ -370,7 +370,7 @@ class HealthAssessmentReportService:
                 "review them with a healthcare provider."
             )
 
-        # -------- Presenting Illness & Past History (Steps 5–6) --------
+        # Presenting Illness & Past History (Steps 5-6)
         if hra.presenting_illness and hra.presenting_illness != "fine":
             advice.append(
                 "Since you have reported a current health complaint, please follow up with a doctor if symptoms persist, worsen, or interfere with your daily activities."
@@ -387,7 +387,7 @@ class HealthAssessmentReportService:
                 "Past surgery history should be shared with doctors during future consultations, especially before new procedures or prescriptions."
             )
 
-        # -------- Sleep (Step 7) --------
+        # Sleep (Step 7)
         if hra.sleep_hours == "lt_7":
             advice.append(
                 "You report sleeping less than 7 hours. Most adults benefit from 7–9 hours of sleep. "
@@ -410,7 +410,7 @@ class HealthAssessmentReportService:
                 "and speak to a doctor if this continues for several weeks."
             )
 
-        # -------- Eating habits (Step 8) --------
+        # Eating habits (Step 8)
         if hra.junk_food_freq in ("often", "very_often", "always"):
             advice.append(
                 "You consume junk or fast foods quite frequently. Try to reduce fried, sugary, and processed items and replace them with home-cooked meals, "
@@ -437,7 +437,7 @@ class HealthAssessmentReportService:
                 "Frequent non-vegetarian intake is fine if balanced. Prefer grilled/steamed options over deep-fried, and include fish, pulses, and salads to keep meals heart-friendly."
             )
 
-        # -------- Alcohol (Step 9) --------
+        # Alcohol (Step 9)
         if hra.alcohol_current:
             advice.append(
                 "You currently consume alcohol. Reducing the number of drinking days and quantity per occasion can protect your liver, heart, and mental health. "
@@ -448,7 +448,7 @@ class HealthAssessmentReportService:
                 "You have stopped drinking alcohol. Maintaining abstinence is very beneficial for your long-term health. Continue avoiding triggers and seeking support if needed."
             )
 
-        # -------- Tobacco (Step 10) --------
+        # Tobacco (Step 10)
         if hra.tobacco_current:
             advice.append(
                 "Tobacco use significantly increases the risk of cancer, heart disease, and lung problems. "
@@ -459,7 +459,7 @@ class HealthAssessmentReportService:
                 "You have quit tobacco. This greatly reduces your long-term health risks. Stay away from people or situations that trigger cravings and celebrate this progress."
             )
 
-        # -------- Family history & checkups (Step 11) --------
+        # Family history & checkups (Step 11)
         if hra.family_chronic_illness:
             advice.append(
                 "A family history of chronic diseases means your own risk can be higher. Regular screening (blood pressure, sugar, cholesterol, etc.) and a healthy lifestyle "
@@ -480,13 +480,13 @@ class HealthAssessmentReportService:
                 "You have stopped medicines without consulting a doctor in the past. Always check with your doctor before stopping or changing prescribed medications."
             )
 
-        # -------- Bowel & bladder (Step 12) --------
+        # Bowel & bladder (Step 12)
         if hra.difficulty_urine or hra.difficulty_stools:
             advice.append(
                 "You reported difficulty with urination or bowel movements. If this persists, is painful, or involves blood, please consult a doctor promptly for evaluation."
             )
 
-        # -------- Fitness (Step 13) --------
+        # Fitness (Step 13)
         low_activity = ("none", "lt_30")
 
         if hra.walking_duration in low_activity and hra.cardio_duration in low_activity:
@@ -499,7 +499,7 @@ class HealthAssessmentReportService:
                     "You are including some form of regular physical activity. Try to keep it consistent each week and add stretching and strength exercises if possible."
                 )
 
-        # -------- Mental wellness (Step 14) --------
+        # Mental wellness (Step 14)
         if any([
             hra.low_interest, hra.depressed,
             hra.sleep_appetite_issue, hra.low_energy, hra.anxious
@@ -509,14 +509,14 @@ class HealthAssessmentReportService:
                 "consider speaking to a counsellor or mental health professional."
             )
 
-        # -------- Work stress (Step 15) --------
+        # Work stress (Step 15)
         if hra.work_stress_affecting_life:
             advice.append(
                 "Work-related stress is affecting your personal life. Try to introduce boundaries (fixed work hours where possible), short breaks, and relaxation techniques. "
                 "If stress feels overwhelming, a counsellor or coach can help you develop coping strategies."
             )
 
-        # -------- If nothing added --------
+        # If nothing added
         if not advice:
             advice.append(
                 "No specific high-risk issues were identified from your responses. Continue maintaining healthy habits for sleep, diet, activity, and mental wellbeing, "

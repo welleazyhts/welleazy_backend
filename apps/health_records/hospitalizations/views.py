@@ -191,9 +191,7 @@ class HospitalizationRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
         except json.JSONDecodeError:
             raise ValidationError({"error": "Invalid JSON format in 'data' field"})
 
-    # --------------------------
     # Save fields
-    # --------------------------
     def _save_record_fields(self, record, validated):
         fields = [
             "hospitalization_type",

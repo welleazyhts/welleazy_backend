@@ -23,7 +23,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
     serializer_class = DoctorProfessionalDetailsSerializer
 
     
-    # ✅ Select doctor from CLIENT API
+    # Select doctor from CLIENT API
     @action(detail=False, methods=['post'], url_path='select-from-client')
     def select_from_client(self, request):
         available_for = request.data.get('available_for')
@@ -36,7 +36,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
             return Response({"error": "CLIENT_DOCTOR_URL not configured in settings.py"},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # 🔹 Fetch from client API
+        # Fetch from client API
         try:
             client_response = requests.get(client_url, timeout=10)
             client_response.raise_for_status()
@@ -45,7 +45,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
             return Response({"error": f"Failed to fetch from client API: {str(e)}"},
                             status=status.HTTP_502_BAD_GATEWAY)
 
-        # 🔹 Filter logic on client data
+        # Filter logic on client data
         filtered = []
         for doc in client_doctors:
             if available_for == "e_consultation" and not doc.get("e_consultation"):
@@ -63,113 +63,6 @@ class DoctorViewSet(viewsets.ModelViewSet):
         if not filtered:
             return Response({"message": "No doctors available from client API."},
                             status=status.HTTP_404_NOT_FOUND)
-
-        selected_doc = random.choice(filtered)
-
-        # 🔹 Optionally save locally for testing
-    #     specialization = DoctorSpeciality.objects.get(pk=specialization_id) if specialization_id else None
-    #     language = Language.objects.get(pk=language_id) if language_id else None
-    #     vendor = Vendor.objects.get(pk=vendor_id) if vendor_id else None
-
-    #     doctor, created = DoctorProfessionalDetails.objects.get_or_create(
-    #         name=selected_doc.get("name"),
-    #         mobile_number=selected_doc.get("mobile_number"),
-    #         defaults={
-    #             "address": selected_doc.get("address", ""),
-    #             "age": selected_doc.get("age", 0),
-    #             "experience": selected_doc.get("experience", 0),
-    #             "blood_group": selected_doc.get("blood_group", ""),
-    #             "gender": selected_doc.get("gender",""),
-    #             "image": selected_doc.get("image"),
-    #             "e_consultation": selected_doc.get("e_consultation", False),
-    #             "in_clinic": selected_doc.get("in_clinic", False),
-    #             "specialization": specialization,
-    #             "language": language,
-    #             "vendor": vendor,
-    #         },
-    #     )
-
-    #     serializer = self.get_serializer(doctor)
-    #     return Response({
-    #         "source": "client_api",
-    #         "stored_locally": created,
-    #         "doctor": serializer.data
-    #     }, status=status.HTTP_200_OK)
-
-
-
-
-    # # ✅ Filter doctors by POST body parameters
-    # @action(detail=False, methods=['post'], url_path='filter')
-    # def filter_doctors(self, request):
-    #     e_consultation = request.data.get('e_consultation')
-    #     in_clinic = request.data.get('in_clinic')
-    #     specialization = request.data.get('specialization')
-    #     language = request.data.get('language')
-    #     vendor = request.data.get('vendor')
-
-    #     queryset = self.queryset
-
-    #     if e_consultation is not None:
-    #         queryset = queryset.filter(e_consultation=bool(e_consultation))
-    #     if in_clinic is not None:
-    #         queryset = queryset.filter(in_clinic=bool(in_clinic))
-    #     if specialization:
-    #         queryset = queryset.filter(specialization_id=specialization)
-    #     if language:
-    #         queryset = queryset.filter(language_id=language)
-    #     if vendor:
-    #         queryset = queryset.filter(vendor_id=vendor)
-
-    #     serializer = self.get_serializer(queryset, many=True)
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
-
-    # # ✅ Select one doctor based on availability + specialization + language/vendor
-    # @action(detail=False, methods=['post'], url_path='select')
-    # def select_doctor(self, request):
-    #     available_for = request.data.get('available_for')  # e_consultation or in_clinic
-    #     specialization = request.data.get('specialization')
-    #     language = request.data.get('language')
-    #     vendor = request.data.get('vendor')
-
-    #     if not available_for:
-    #         return Response(
-    #             {"error": "Missing 'available_for'. Use 'e_consultation' or 'in_clinic'."},
-    #             status=status.HTTP_400_BAD_REQUEST
-    #         )
-
-    #     queryset = self.queryset
-
-    #     if available_for == 'e_consultation':
-    #         queryset = queryset.filter(e_consultation=True)
-    #     elif available_for == 'in_clinic':
-    #         queryset = queryset.filter(in_clinic=True)
-    #     else:
-    #         return Response(
-    #             {"error": "Invalid value for 'available_for'. Use 'e_consultation' or 'in_clinic'."},
-    #             status=status.HTTP_400_BAD_REQUEST
-    #         )
-
-    #     # Optional filters
-    #     if specialization:
-    #         queryset = queryset.filter(specialization_id=specialization)
-    #     if language:
-    #         queryset = queryset.filter(language_id=language)
-    #     if vendor:
-    #         queryset = queryset.filter(vendor_id=vendor)
-
-    #     if not queryset.exists():
-    #         return Response(
-    #             {"message": "No doctor available matching your criteria."},
-    #             status=status.HTTP_404_NOT_FOUND
-    #         )
-
-    #     selected_doctor = random.choice(queryset)
-    #     serializer = self.get_serializer(selected_doctor)
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    # def perform_create(self, serializer):
-    #     serializer.save(created_by=self.request.user)
 
 
 

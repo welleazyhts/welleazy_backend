@@ -43,7 +43,7 @@ class AddToCartAPIView(APIView):
         # Vendor auto-assigned from medicine
         vendor = medicine.vendor
 
-        # Duplicate Check----
+        # Duplicate Check
 
         if CartItem.objects.filter(cart=cart , medicine=medicine).exists():
             return Response(
@@ -242,7 +242,7 @@ class SelectAddressForCartAPIView(APIView):
 
         address = get_object_or_404(Address, id=address_id, user=user)
 
-        # ❗ Validate that address has a type
+        # Validate that address has a type
         if not address.address_type:
             return Response(
                 {"error": "Please select address type before using this address"},
@@ -492,7 +492,7 @@ class PharmacyOrderCreateAPIView(APIView):
     def post(self, request):
         user = request.user
         
-        # 1️⃣ Get Cart
+        # 1. Get Cart
         cart = Cart.objects.get_or_create(user=user) [0]
 
 
@@ -505,7 +505,7 @@ class PharmacyOrderCreateAPIView(APIView):
         if not cart.delivery_mode:
             return Response({"error": "Please choose a delivery mode"}, status=400)
 
-        # 2️⃣ Calculate totals
+        # 2. Calculate totals
         subtotal = cart.total_selling
         coupon_discount = 0
 
@@ -532,13 +532,13 @@ class PharmacyOrderCreateAPIView(APIView):
         total_amount = max(subtotal - coupon_discount, 0)
 
      
-        # 3️⃣ Delivery Date
+        # 3. Delivery Date
         expected_date = estimate_delivery_date(cart.address.pincode)
 
-        # 4️⃣ Generate a unique Order ID
+        # 4. Generate a unique Order ID
         order_id = f"PHAR-{int(datetime.now().timestamp())}"
 
-        # 5️⃣ CREATE PharmacyOrder
+        # 5. CREATE PharmacyOrder
         order = PharmacyOrder.objects.create(
             order_id=order_id,
             user=user,
@@ -551,12 +551,12 @@ class PharmacyOrderCreateAPIView(APIView):
             address=cart.address
         )
 
-        # 6️⃣ Add prescription file to order (if exists)
+        # 6. Add prescription file to order (if exists)
         if cart.prescription:
             order.prescription_file = cart.prescription.file
             order.save()
 
-        # 7️⃣ Move cart items → PharmacyOrderItems
+        # 7. Move cart items -> PharmacyOrderItems
         for item in cart.items.all():
             PharmacyOrderItem.objects.create(
                 order=order,
@@ -565,7 +565,7 @@ class PharmacyOrderCreateAPIView(APIView):
                 amount=item.quantity * item.medicine.selling_price
             )
 
-        # 8️⃣ Clear Cart after creating order
+        # 8. Clear Cart after creating order
         cart.items.all().delete()
         cart.coupon = None
         cart.prescription = None
@@ -581,7 +581,7 @@ class PharmacyOrderCreateAPIView(APIView):
             f"Expected delivery date: {formatted_date}.",
             item_type="pharmacy_order"
         )
-        # 9️⃣ Return success
+        # 9. Return success
         return Response({
             "message": "Order placed successfully!",
             "order_id": order.order_id,

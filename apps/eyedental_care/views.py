@@ -120,9 +120,7 @@ class EyeDentalCareBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
             deleted_at__isnull=True
         ).order_by("-created_at")
 
-    # ============================================================
-    # STEP 1 — SELECT TREATMENT (CREATE DRAFT)
-    # ============================================================
+    # STEP 1: SELECT TREATMENT (CREATE DRAFT)
     @action(detail=False, methods=["post"], url_path="select-booking-type")
     def select_booking_type(self, request):
         """
@@ -150,9 +148,7 @@ class EyeDentalCareBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-    # -------------------------------
     # If booking_type = treatment
-    # -------------------------------
         if booking_type == "treatment":
             if care_program_type == "eye" and not eye_treatment:
                 return Response(
@@ -166,9 +162,7 @@ class EyeDentalCareBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-    # -------------------------------
     # Create draft booking
-    # -------------------------------
         booking = EyeDentalCareBooking.objects.create(
             user=request.user,
             care_program_type=care_program_type,
@@ -189,9 +183,7 @@ class EyeDentalCareBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
             )
 
 
-    # ============================================================
-    # STEP 2 — SELECT SERVICE TYPE
-    # ============================================================
+    # STEP 2: SELECT SERVICE TYPE
     @action(detail=True, methods=["patch"], url_path="select-service-type")
     def select_service_type(self, request, pk=None):
         booking = self.get_object()
@@ -218,17 +210,13 @@ class EyeDentalCareBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
 
 
 
-    # ============================================================
-    # STEP 3 — SELF / DEPENDANT OPTIONS (PREFILL)
-    # ============================================================
+    # STEP 3: SELF / DEPENDANT OPTIONS (PREFILL)
     @action(detail=False, methods=["get"], url_path="options")
     def booking_options(self, request):
         user = request.user
         options = []
 
-    # =========================
     # SELF
-    # =========================
         user_addresses = Address.objects.filter(
             user=user,
             is_active=True
@@ -240,12 +228,10 @@ class EyeDentalCareBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
             "name": user.name,
             "relationship": "Self",
             "addresses": AddressSerializer(user_addresses, many=True).data,
-            "allow_manual_address": True,   # 👈 important
+            "allow_manual_address": True,   
         })
 
-    # =========================
     # DEPENDANTS
-    # =========================
         for dep in Dependant.objects.filter(user=user, is_active=True):
             dep_addresses = Address.objects.filter(
                 dependant=dep,
@@ -258,15 +244,13 @@ class EyeDentalCareBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
                 "name": dep.name,
                 "relationship": dep.relationship.name if dep.relationship else None,
                 "addresses": AddressSerializer(dep_addresses, many=True).data,
-                "allow_manual_address": True,   # 👈 important
+                "allow_manual_address": True,   
             })
 
         return Response({"options": options})
 
 
-    # ============================================================
-    # STEP 4 — FINAL SUBMIT / UPDATE
-    # ============================================================
+    # STEP 4: FINAL SUBMIT / UPDATE
     @action(detail=True, methods=["patch"], url_path="final-submit")
     @transaction.atomic
     def final_submit(self, request, pk=None):
@@ -291,9 +275,7 @@ class EyeDentalCareBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
         )
 
 
-    # ============================================================
     # SOFT DELETE
-    # ============================================================
     def destroy(self, request, *args, **kwargs):
         booking = self.get_object()
         booking.deleted_at = timezone.now()
@@ -303,9 +285,7 @@ class EyeDentalCareBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
-    # ============================================================
     # COMMON FIELD HANDLER
-    # ============================================================
     def _save_final_fields(self, booking, validated, request):
         user = request.user
 
@@ -368,9 +348,7 @@ class EyeDentalCareBookingViewSet(SaveUserMixin, viewsets.ModelViewSet):
             {"address_text": "Please provide address details"}
         )
 
-    # ============================================================
     # DEFAULT ADDRESS HELPERS
-    # ============================================================
     def _get_default_home_address_for_user(self, user):
         qs = Address.objects.filter(user=user, is_active=True)
         return (

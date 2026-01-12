@@ -18,7 +18,7 @@ class TestViewSet(viewsets.ModelViewSet):
         # Return list of tests (from external API or local DB).
         client_api_url = getattr(settings, "CLIENT_TEST_API_URL", None)
 
-        # --- Optional: Fetch from Client API ---
+        # Optional: Fetch from Client API
         if client_api_url:
             try:
                 headers = {}
@@ -48,7 +48,7 @@ class TestViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_502_BAD_GATEWAY,
                 )
 
-        # --- Local DB Data ---
+        # Local DB Data
         queryset = self.get_queryset().order_by("id")
         serializer = TestSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

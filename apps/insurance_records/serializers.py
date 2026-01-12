@@ -12,7 +12,7 @@ from apps.dependants.serializers import DependantSerializer
 from apps.common.serializers.dependant_mixin import DependantResolverMixin
 
 
-# ---------- basic serializers (for nested output) ----------
+# basic serializers (for nested output)
 
 class InsurancePolicyDocumentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -108,7 +108,7 @@ class InsurancePolicyRecordSerializer(DependantResolverMixin,
 
 
 
-# ---------- input payload serializers ----------
+# input payload serializers
 
 
 class FloaterMemberInputSerializer(serializers.Serializer):
@@ -201,20 +201,20 @@ def validate(self, data):
     owner_type = data.get("policy_owner_type")
     plan_type = data["plan_type"]
 
-    # ----- OWNER: COMPANY -----
+    # OWNER: COMPANY
     if owner_type == "company":
         data["for_whom"] = "self"
         data["dependant"] = None
         data["is_self_included"] = False
         return data
 
-    # ----- OWNER: SELF -----
+    # OWNER: SELF
     if owner_type == "self":
         data["for_whom"] = "self"
         data["dependant"] = None
         return data
 
-    # ----- OWNER: DEPENDANT -----
+    # OWNER: DEPENDANT
     if owner_type == "dependant":
         dep_id = data.get("dependant")
         if not dep_id:

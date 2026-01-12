@@ -25,7 +25,7 @@ from apps.consultation_filter.models import DoctorSpeciality
 
 class CartItemSerializer(serializers.ModelSerializer):
 
-    # ---- WRITE FIELDS ----
+    # WRITE FIELDS
     diagnostic_center_id = serializers.PrimaryKeyRelatedField(
         queryset=DiagnosticCenter.objects.all(),
         source="diagnostic_center",
@@ -95,7 +95,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     #     write_only=True
     # )
 
-    # ---- READ FIELDS ----
+    # READ FIELDS
     diagnostic_center = serializers.PrimaryKeyRelatedField(read_only=True)
     tests = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
     doctor = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -125,7 +125,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at"]
 
-    # ---- VALIDATION ----
+    # VALIDATION
     def validate(self, data):
         dc = data.get("diagnostic_center")
         item_type = data.get("item_type", "test")
@@ -191,7 +191,7 @@ class CartItemSerializer(serializers.ModelSerializer):
 
         return data
 
-    # ---- CREATE ----
+    # CREATE
     def create(self, validated_data):
         tests = validated_data.pop("tests", [])
         cart = self.context.get("cart")
@@ -318,7 +318,7 @@ class AddPackageToCartSerializer(serializers.Serializer):
     
 
     
-#  DOCTOR RELATED SERIALIZERS----
+# DOCTOR RELATED SERIALIZERS
 
 class DoctorAvailabilitySerializer(serializers.ModelSerializer):
     doctor_name = serializers.CharField(source='doctor.doctor.name', read_only=True)
@@ -494,7 +494,7 @@ class MedicalReportSerializer(serializers.ModelSerializer):
 
 
 
-# EYE & DENTAL APPOINTMENTS----
+# EYE & DENTAL APPOINTMENTS
 
 
 # class EyeAppointmentToCartSerializer(serializers.Serializer):

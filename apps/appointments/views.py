@@ -190,7 +190,7 @@ class CheckoutCartAPIView(APIView):
             final_payable += final_price
 
 
-        # DOCTOR DETAILS-------
+        # DOCTOR DETAILS
 
             doctor_info = None
             if item.item_type == "doctor_appointment":
@@ -210,7 +210,7 @@ class CheckoutCartAPIView(APIView):
                 }
 
 
-            # EYE -DENTAL DETAILS-----
+            # EYE -DENTAL DETAILS
 
             # eye_dental_info = None
             # if item.item_type in ["eye_appointment", "dental_appointment"]:
@@ -227,7 +227,7 @@ class CheckoutCartAPIView(APIView):
             #         "note": item.note,
             #     } 
 
-            # LAB DETAILS------
+            # LAB DETAILS
             lab_info = None
             if item.item_type == "appointment":  # lab test appointment
                 lab_info = {
@@ -240,9 +240,7 @@ class CheckoutCartAPIView(APIView):
                 }
 
 
-            # ------------------------------------------------------------------------------
             # HEALTH PACKAGE DETAILS
-            # ------------------------------------------------------------------------------
             health_package_info = None
             if item.item_type == "health_package" and item.health_package:
                 health_package_info = {
@@ -253,9 +251,7 @@ class CheckoutCartAPIView(APIView):
                     "tests": [t.name for t in item.health_package.tests.all()],
                 }
 
-            # ------------------------------------------------------------------------------
             # SPONSORED PACKAGE DETAILS
-            # ------------------------------------------------------------------------------
             sponsored_package_info = None
             if item.item_type == "sponsored_package" and item.sponsored_package:
                 sponsored_package_info = {
@@ -295,7 +291,7 @@ class CheckoutCartAPIView(APIView):
 
 class ConfirmCheckoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
-          # ONLY FOR TESTING NOW PURPOSE---
+          # ONLY FOR TESTING NOW PURPOSE
           
     def post(self, request, cart_id):
         cart = get_object_or_404(Cart, id=cart_id, user=request.user)
@@ -316,9 +312,7 @@ class ConfirmCheckoutAPIView(APIView):
             elif item.selected_date and item.selected_time:
                 scheduled_at = datetime.combine(item.selected_date, item.selected_time)
 
-            # ----------------------------------------------------------------------------
             # DOCTOR APPOINTMENT CREATION
-            # ----------------------------------------------------------------------------
             if item.item_type == "doctor_appointment":
                 appt = Appointment.objects.create(
                     user=request.user,
@@ -371,9 +365,7 @@ class ConfirmCheckoutAPIView(APIView):
             #         "time": item.appointment_time or item.selected_time,
             #     })
 
-            # ---------------------------------------------------------
             # DENTAL APPOINTMENT
-            # ---------------------------------------------------------
             # elif item.item_type == "dental_appointment":
             #     appt = Appointment.objects.create(
             #         user=request.user,
@@ -396,9 +388,7 @@ class ConfirmCheckoutAPIView(APIView):
             #     })
 
 
-            # ----------------------------------------------------------------------------
             # LAB APPOINTMENT CREATION
-            # ----------------------------------------------------------------------------
             elif item.item_type == "test":  
                 appt = Appointment.objects.create(
                     user=request.user,
@@ -429,9 +419,7 @@ class ConfirmCheckoutAPIView(APIView):
                 })
 
 
-            # ==========================================================
-            # 4️⃣ HEALTH PACKAGE APPOINTMENT
-            # ==========================================================
+            # HEALTH PACKAGE APPOINTMENT
             elif item.item_type == "health_package" and item.health_package:
                 appt = Appointment.objects.create(
                     user=request.user,
@@ -462,9 +450,7 @@ class ConfirmCheckoutAPIView(APIView):
 
                 })
 
-            # ==========================================================
             # SPONSORED PACKAGE APPOINTMENT
-            # ==========================================================
             elif item.item_type == "sponsored_package" and item.sponsored_package:
                 appt = Appointment.objects.create(
                     user=request.user,
@@ -616,7 +602,7 @@ class AddPackageToCartAPIView(APIView):
 
 # FOR DOCTOR APPOINTMENT
 
-# AVAILABLE DATES AND SLOTS FOR PERTICULAR DOCTOR----
+# AVAILABLE DATES AND SLOTS FOR DOCTOR
 
 # TO INSERT THE AVAILABILITY DATES
 class DoctorAvailabilityViewSet(viewsets.ModelViewSet):
@@ -800,7 +786,7 @@ class DoctorAvailabilityViewSet(viewsets.ModelViewSet):
 
         return Response(data)
 
-# SELECT THE DOCTOR FIRST-----
+# SELECT THE DOCTOR FIRST
 class SelectDoctorAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -841,7 +827,7 @@ class SelectDoctorAPIView(APIView):
         }, status=200)
 
 
- # DOCTOR APPOINTMENTS-----
+ # DOCTOR APPOINTMENTS
 class AppointmentToCartAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -849,9 +835,7 @@ class AppointmentToCartAPIView(APIView):
         data = request.data.copy()
         user = request.user
 
-        # ---------------------------------------------------------
         # STEP 1: Doctor & Specialization must be pre-selected
-        # ---------------------------------------------------------
         doctor_id = request.session.get("selected_doctor_id")
         specialization_id = request.session.get("selected_specialization_id")
 
@@ -864,9 +848,7 @@ class AppointmentToCartAPIView(APIView):
         doctor = get_object_or_404(DoctorProfessionalDetails, id=doctor_id)
         specialization = get_object_or_404(DoctorSpeciality, id=specialization_id)
 
-        # ---------------------------------------------------------
         # STEP 2: for_whom (self / dependant)
-        # ---------------------------------------------------------
         for_whom = data.get("for_whom")
         if for_whom not in ["self", "dependant"]:
             return Response({"error": "for_whom must be 'self' or 'dependant'."}, status=400)
@@ -879,9 +861,7 @@ class AppointmentToCartAPIView(APIView):
 
             dependant = get_object_or_404(Dependant, id=dependant_id, user=user)
 
-        # ---------------------------------------------------------
         # STEP 3: Validate date & time
-        # ---------------------------------------------------------
         from datetime import datetime
 
         appointment_date = datetime.strptime(
@@ -900,9 +880,7 @@ class AppointmentToCartAPIView(APIView):
             appointment_time = datetime.strptime(data.get("appointment_time"), "%I:%M %p").time()
         except ValueError:
             return Response({"error": "Invalid date or time format"}, status=400)
-        # ---------------------------------------------------------
         # STEP 4: Consultation Mode Logic
-        # ---------------------------------------------------------
         mode = data.get("mode")
 
         if doctor.in_clinic:
@@ -915,9 +893,7 @@ class AppointmentToCartAPIView(APIView):
         else:
             return Response({"error": "Doctor has no consultation mode"}, status=400)
 
-        # ---------------------------------------------------------
         # STEP 5: Slot Check (based on existing CartItems!)
-        # ---------------------------------------------------------
         slot_in_cart = CartItem.objects.filter(
             user=user,
             doctor=doctor,
@@ -933,14 +909,10 @@ class AppointmentToCartAPIView(APIView):
                 status=400
             )
 
-        # ---------------------------------------------------------
         # STEP 6: Get or Create Cart
-        # ---------------------------------------------------------
         cart, _ = Cart.objects.get_or_create(user=user)
 
-        # ---------------------------------------------------------
         # STEP 7: Create CartItem (NOT Appointment)
-        # ---------------------------------------------------------
         price= doctor.consultation_fee
         discount_amount=0
         final_price= price-discount_amount
@@ -980,16 +952,12 @@ class AppointmentToCartAPIView(APIView):
 
 
 
-        # ---------------------------------------------------------
         # STEP 8: Upload Documents to CartItem (NOT APPOINTMENT)
-        # ---------------------------------------------------------
         for f in request.FILES.getlist("documents"):
             doc = ReportDocument.objects.create(file=f)
             cart_item.documents.add(doc)
 
-        # ---------------------------------------------------------
         # STEP 9: Return Response
-        # ---------------------------------------------------------
         return Response(
             {
                 "message": "Appointment added to cart",
@@ -1000,7 +968,7 @@ class AppointmentToCartAPIView(APIView):
 
 
 
-# DENTAL AND EYE APPOINTMENTS-----
+# DENTAL AND EYE APPOINTMENTS
 
 # class DentalAppointmentToCartAPIView(APIView):
 #     permission_classes = [IsAuthenticated]
@@ -1009,15 +977,11 @@ class AppointmentToCartAPIView(APIView):
 #         data = request.data.copy()
 #         user = request.user
 
-#         # ---------------------------------------------------------
-#         # STEP 1: Fixed specialization for Dental
-#         # ---------------------------------------------------------
-#         specialization = get_object_or_404(DoctorSpeciality, name__iexact="Dentist")
+#         #         # STEP 1: Fixed specialization for Dental
+#         #         specialization = get_object_or_404(DoctorSpeciality, name__iexact="Dentist")
 
-#         # ---------------------------------------------------------
-#         # STEP 2: For whom (self / dependant)
-#         # ---------------------------------------------------------
-#         for_whom = data.get("for_whom")
+#         #         # STEP 2: For whom (self / dependant)
+#         #         for_whom = data.get("for_whom")
 #         if for_whom not in ["self", "dependant"]:
 #             return Response({"error": "for_whom must be 'self' or 'dependant'."}, status=400)
 
@@ -1034,10 +998,8 @@ class AppointmentToCartAPIView(APIView):
 #             return Response({"error": "consultation_fee is required"}, status=400)
 
 
-#         # ---------------------------------------------------------
-#         # STEP 3: Validate vendor center
-#         # ---------------------------------------------------------
-#         center_id = data.get("dental_vendor_center_id")
+#         #         # STEP 3: Validate vendor center
+#         #         center_id = data.get("dental_vendor_center_id")
 #         if not center_id:
 #             return Response({"error": "dental_vendor_center_id is required"}, status=400)
 
@@ -1048,10 +1010,8 @@ class AppointmentToCartAPIView(APIView):
 #         consultation_fee = Decimal(
 #             data.get("consultation_fee") or vendor_center.consultation_fee
 #         )
-#         # ---------------------------------------------------------
-#         # STEP 4: Validate date & time
-#         # ---------------------------------------------------------
-#         from datetime import datetime
+#         #         # STEP 4: Validate date & time
+#         #         from datetime import datetime
 
 #         appointment_date = datetime.strptime(
 #             data.get("appointment_date"), "%Y-%m-%d"
@@ -1069,10 +1029,8 @@ class AppointmentToCartAPIView(APIView):
 #             appointment_time = datetime.strptime(data.get("appointment_time"), "%I:%M %p").time()
 #         except ValueError:
 #             return Response({"error": "Invalid date or time format"}, status=400)
-#         # ---------------------------------------------------------
-#         # STEP 5: Slot Check (inside cart only)
-#         # ---------------------------------------------------------
-#         slot_in_cart = CartItem.objects.filter(
+#         #         # STEP 5: Slot Check (inside cart only)
+#         #         slot_in_cart = CartItem.objects.filter(
 #             user=user,
 #             dental_vendor_centers=vendor_center,
 #             appointment_date=appointment_date,
@@ -1087,15 +1045,11 @@ class AppointmentToCartAPIView(APIView):
 #                 status=400
 #             )
 
-#         # ---------------------------------------------------------
-#         # STEP 6: Get or create cart
-#         # ---------------------------------------------------------
-#         cart, _ = Cart.objects.get_or_create(user=user)
+#         #         # STEP 6: Get or create cart
+#         #         cart, _ = Cart.objects.get_or_create(user=user)
 
-#         # ---------------------------------------------------------
-#         # STEP 7: Create CartItem (NO Appointment model)
-#         # ---------------------------------------------------------
-
+#         #         # STEP 7: Create CartItem (NO Appointment model)
+#         
 #         price= vendor_center.consultation_fee
 #         discount_amount=0
 #         final_price= price-discount_amount
@@ -1133,10 +1087,8 @@ class AppointmentToCartAPIView(APIView):
 #             updated_by=user
 #         )
 
-#         # ---------------------------------------------------------
-#         # STEP 8: Add documents to cart item
-#         # ---------------------------------------------------------
-#         for f in request.FILES.getlist("documents"):
+#         #         # STEP 8: Add documents to cart item
+#         #         for f in request.FILES.getlist("documents"):
 #             doc = ReportDocument.objects.create(file=f)
 #             cart_item.documents.add(doc)
 
@@ -1157,15 +1109,11 @@ class AppointmentToCartAPIView(APIView):
 #         data = request.data.copy()
 #         user = request.user
 
-#         # ---------------------------------------------------------
-#         # STEP 1: Fixed specialization for Eye
-#         # ---------------------------------------------------------
-#         specialization = get_object_or_404(DoctorSpeciality, name__iexact="Dermatology")
+#         #         # STEP 1: Fixed specialization for Eye
+#         #         specialization = get_object_or_404(DoctorSpeciality, name__iexact="Dermatology")
 
-#         # ---------------------------------------------------------
-#         # STEP 2: For whom (self / dependant)
-#         # ---------------------------------------------------------
-#         for_whom = data.get("for_whom")
+#         #         # STEP 2: For whom (self / dependant)
+#         #         for_whom = data.get("for_whom")
 #         if for_whom not in ["self", "dependant"]:
 #             return Response({"error": "for_whom must be 'self' or 'dependant'."}, status=400)
 
@@ -1181,10 +1129,8 @@ class AppointmentToCartAPIView(APIView):
 #             return Response({"error": "consultation_fee is required"}, status=400)
 
 
-#         # ---------------------------------------------------------
-#         # STEP 3: Validate vendor center
-#         # ---------------------------------------------------------
-#         center_id = data.get("eye_vendor_centers_id")
+#         #         # STEP 3: Validate vendor center
+#         #         center_id = data.get("eye_vendor_centers_id")
 #         if not center_id:
 #             return Response({"error": "eye_vendor_center_id is required"}, status=400)
 
@@ -1195,10 +1141,8 @@ class AppointmentToCartAPIView(APIView):
 #             data.get("consultation_fee") or vendor_center.consultation_fee
 #         ) 
 
-#         # ---------------------------------------------------------
-#         # STEP 4: Validate date & time
-#         # ---------------------------------------------------------
-#         from datetime import datetime
+#         #         # STEP 4: Validate date & time
+#         #         from datetime import datetime
 
 #         appointment_date = datetime.strptime(
 #             data.get("appointment_date"), "%Y-%m-%d"
@@ -1217,10 +1161,8 @@ class AppointmentToCartAPIView(APIView):
 #         except ValueError:
 #             return Response({"error": "Invalid date or time format"}, status=400)
 
-#         # ---------------------------------------------------------
-#         # STEP 5: Slot Check (inside cart only)
-#         # ---------------------------------------------------------
-#         slot_in_cart = CartItem.objects.filter(
+#         #         # STEP 5: Slot Check (inside cart only)
+#         #         slot_in_cart = CartItem.objects.filter(
 #             user=user,
 #             eye_vendor_centers=vendor_center,
 #             appointment_date=appointment_date,
@@ -1235,16 +1177,12 @@ class AppointmentToCartAPIView(APIView):
 #                 status=400
 #             )
 
-#         # ---------------------------------------------------------
-#         # STEP 6: Get or create cart
-#         # ---------------------------------------------------------
-#         cart, _ = Cart.objects.get_or_create(user=user)
+#         #         # STEP 6: Get or create cart
+#         #         cart, _ = Cart.objects.get_or_create(user=user)
 
     
-#         # ---------------------------------------------------------
-#         # STEP 7: Create CartItem (NO Appointment model)
-#         # ---------------------------------------------------------
-
+#         #         # STEP 7: Create CartItem (NO Appointment model)
+#         
 #         price= vendor_center.consultation_fee
 #         discount_amount=0
 #         final_price= price-discount_amount
@@ -1279,10 +1217,8 @@ class AppointmentToCartAPIView(APIView):
 #             updated_by=user
 #         )
 
-#         # ---------------------------------------------------------
-#         # STEP 8: Add documents
-#         # ---------------------------------------------------------
-#         for f in request.FILES.getlist("documents"):
+#         #         # STEP 8: Add documents
+#         #         for f in request.FILES.getlist("documents"):
 #             doc = ReportDocument.objects.create(file=f)
 #             cart_item.documents.add(doc)
 
@@ -1477,10 +1413,8 @@ class AvailableLabSlotsAPIView(APIView):
 #         if time_obj not in slot_times:
 #             return Response({"error": "Selected time not available for this center"}, status=400)
 
-#         # ----------------------------------------------------
-#         # GENERALIZED SLOT COUNT CHECK (FOR ALL ITEM TYPES)
-#         # ----------------------------------------------------
-#         with transaction.atomic():
+#         #         # GENERALIZED SLOT COUNT CHECK (FOR ALL ITEM TYPES)
+#         #         with transaction.atomic():
 
 #             booked = CartItem.objects.filter(
 #                 diagnostic_center=center,
@@ -1608,7 +1542,7 @@ class AvailableLabSlotsAPIView(APIView):
 #         )
 
 
-# VOUCHER CREATION-------
+# VOUCHER CREATION
 
 class CreateAppointmentVoucherAPIView(APIView):
     permission_classes = [IsAuthenticated]

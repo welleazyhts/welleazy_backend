@@ -7,7 +7,7 @@ from .models import Vendor
 
 
 
-# DOCTOR SPECIALITY-----
+# DOCTOR SPECIALITY
 
 class DoctorSpecialitySerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,19 +15,13 @@ class DoctorSpecialitySerializer(serializers.ModelSerializer):
         fields=['id', 'name', 'image', 'description', 'is_active']
 
 
-# LANGUAGE SELECTION-----
-
-
-
+# LANGUAGE SELECTION
 
 class LanguageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Language
         fields = ['id', 'name', 'code', 'is_active']
        
-      
-
-
 class UserLanguagePreferenceSerializer(serializers.ModelSerializer):
     language = LanguageSerializer(read_only=True)
 
@@ -35,11 +29,7 @@ class UserLanguagePreferenceSerializer(serializers.ModelSerializer):
         model = UserLanguagePreference
         fields = ['id', 'user', 'language']
        
-
-
-# PINCODES---
-
-
+# PINCODES
 
 class PincodeSerializer(serializers.ModelSerializer):
     city = CitySerializer(read_only=True)
@@ -49,19 +39,11 @@ class PincodeSerializer(serializers.ModelSerializer):
         write_only=True
     )
 
-
     class Meta:
         model = Pincode
         fields = ['id', 'code', 'city', 'city_id']
        
-        
-
-
-
-
-
-# VENDORS----
-
+# VENDORS
 
 class VendorSerializer(serializers.ModelSerializer):
 
@@ -69,15 +51,3 @@ class VendorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vendor
         fields = ['id', 'name', 'available', "specialization" , "specialization_name"]
-
-       
-
-
-
-
-
-
-
-
-
-

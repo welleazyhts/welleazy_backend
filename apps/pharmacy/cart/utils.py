@@ -13,7 +13,7 @@ def get_pincode_zone(pincode):
 
     zone_data = cache.get(PINCODE_CACHE_KEY)
 
-    # If not in cache → fetch from client API
+    # If not in cache -> fetch from client API
     if not zone_data:
         try:
             url = settings.CLIENT_PINCODE_URL
@@ -63,7 +63,7 @@ def estimate_delivery_date(pincode, order_datetime=None):
 
     estimated = order_datetime + timedelta(days=days)
 
-    # Move from Sunday → Monday
+    # Move from Sunday -> Monday
     if estimated.weekday() == 6:
         estimated += timedelta(days=1)
 

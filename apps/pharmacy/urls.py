@@ -41,23 +41,23 @@ from .views import(
 
 
 urlpatterns = [
-    #Banners---
+    # Banners
     path("banners/", PharmacyBannerListAPIView.as_view()),
     path("banners/create/", CreatePharmacyBannerAPIView.as_view()),
     path("banners/<int:pk>/update/", UpdatePharmacyBannerAPIView.as_view()),
     path("banners/<int:pk>/delete/", DeletePharmacyBannerAPIView.as_view()),
-    # Vendors----
+    # Vendors
     path("vendors/", PharmacyVendorListAPIView.as_view()),
     path("vendors/create/", CreateVendorAPIView.as_view()),
     path("vendors/<int:pk>/update/", UpdateVendorAPIView.as_view()),
     path("vendors/<int:pk>/delete/", DeleteVendorAPIView.as_view()),
-    # Categories----
+    # Categories
     path("categories/", PharmacyCategoryListAPIView.as_view()),
     path("categories/create/", CreateCategoryAPIView.as_view()),
     path("categories/<int:pk>/update/", UpdateCategoryAPIView.as_view()),
     path("categories/<int:pk>/delete/", DeleteCategoryAPIView.as_view()),
     
-    # Medicines----
+    # Medicines
     path("medicines/", PharmacyMedicineListAPIView.as_view()),
     path("medicines/create/", MedicineCreateAPIView.as_view()),
     path("medicines/update/<int:pk>/", MedicineUpdateAPIView.as_view()),
@@ -69,7 +69,7 @@ urlpatterns = [
     path("medicines/filter/", PharmacyMedicineFilterAPIView.as_view()),
 
 
-    # APPOLO COUPON GENERATION---
+    # APPOLO COUPON GENERATION
 
     
     path("coupons/create/", CreateMedicineCouponAPIView.as_view()),

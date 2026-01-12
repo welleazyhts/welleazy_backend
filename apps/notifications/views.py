@@ -63,7 +63,7 @@ class UserNotificationsAPIView(APIView):
         unread = qs.filter(is_read=False).count()
 
 
-        # ----- PAGINATION -----
+        # PAGINATION
 
         pagination = paginate_queryset(qs , request)
         paginated_qs= pagination ["results"]

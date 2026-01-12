@@ -82,7 +82,7 @@ class HealthAssessmentSerializer(DependantResolverMixin, serializers.ModelSerial
         
     def validate(self, data):
         
-        # ---- Presenting Illness ----
+        # Presenting Illness
         if "presenting_illness" in data:
             if data.get("presenting_illness") == "other":
                 if not data.get("presenting_illness_other"):
@@ -92,7 +92,7 @@ class HealthAssessmentSerializer(DependantResolverMixin, serializers.ModelSerial
             else:
                 data["presenting_illness_other"] = ""
 
-        # ------------------ Eating habits validation ------------------
+        # Eating habits validation
         if "is_veg" in data:
             if data.get("is_veg") is False and not data.get("non_veg_freq"):
                 raise serializers.ValidationError({
@@ -101,7 +101,7 @@ class HealthAssessmentSerializer(DependantResolverMixin, serializers.ModelSerial
             if data.get("is_veg") is True:
                 data["non_veg_freq"] = ""
 
-        # ------------------ Past history validation ------------------
+        # Past history validation
         if "chronic_illness" in data:
             if data.get("chronic_illness") is True and not data.get("chronic_illness_details"):
                 raise serializers.ValidationError({
@@ -118,7 +118,7 @@ class HealthAssessmentSerializer(DependantResolverMixin, serializers.ModelSerial
             if data.get("surgery_history") is False:
                 data["surgery_history_details"] = ""
                 
-        # ---- Midnight wake-up reasons ----
+        # Midnight wake-up reasons
         if "wakeup_midnight" in data:
             if data.get("wakeup_midnight") is True and not data.get("wakeup_midnight_reasons"):
                 raise serializers.ValidationError({
@@ -127,7 +127,7 @@ class HealthAssessmentSerializer(DependantResolverMixin, serializers.ModelSerial
             if data.get("wakeup_midnight") is False:
                 data["wakeup_midnight_reasons"] = []
                 
-        # ---- Alcohol consumption details ----
+        # Alcohol consumption details
         alcohol_current = data.get("alcohol_current")
         alcohol_past = data.get("alcohol_past")
 
@@ -166,11 +166,11 @@ class HealthAssessmentSerializer(DependantResolverMixin, serializers.ModelSerial
             data["alcohol_duration"] = None
             data["alcohol_quit_period"] = None
             
-        # ---- Tobacco / Smoking validation ----
+        # Tobacco / Smoking validation
         tobacco_current = data.get("tobacco_current")
         tobacco_quit = data.get("tobacco_quit")
 
-        # CASE 1 → CURRENT SMOKER
+        # CASE 1 -> CURRENT SMOKER
         if tobacco_current is True:
 
             required_fields = ["tobacco_type", "tobacco_duration", "tobacco_planning_quit"]
@@ -184,7 +184,7 @@ class HealthAssessmentSerializer(DependantResolverMixin, serializers.ModelSerial
             data["tobacco_quit"] = False
             data["tobacco_quit_period"] = None
 
-        # CASE 2 → PAST SMOKER (QUIT)
+        # CASE 2 -> PAST SMOKER (QUIT)
         elif tobacco_current is False and tobacco_quit is True:
 
             if not data.get("tobacco_quit_period"):
@@ -197,7 +197,7 @@ class HealthAssessmentSerializer(DependantResolverMixin, serializers.ModelSerial
             data["tobacco_duration"] = None
             data["tobacco_planning_quit"] = None
 
-        # CASE 3 → NEVER SMOKED
+        # CASE 3 -> NEVER SMOKED
         elif tobacco_current is False and tobacco_quit is False:
 
             data["tobacco_type"] = None
@@ -205,7 +205,7 @@ class HealthAssessmentSerializer(DependantResolverMixin, serializers.ModelSerial
             data["tobacco_planning_quit"] = None
             data["tobacco_quit_period"] = None
             
-        # ---- Family chronic illness validation ----
+        # Family chronic illness validation
         if "family_chronic_illness" in data:
             if data.get("family_chronic_illness") is True:
                 records = self.initial_data.get("family_illness_records")
@@ -216,7 +216,7 @@ class HealthAssessmentSerializer(DependantResolverMixin, serializers.ModelSerial
             else:
                 data["family_illness_records"] = []
                 
-        # ---- Bowel / bladder validation ----
+        # Bowel / bladder validation
         if "difficulty_urine" in data:
             if data.get("difficulty_urine") is True:
                 if not self.initial_data.get("difficulty_urine_reasons"):
@@ -226,7 +226,7 @@ class HealthAssessmentSerializer(DependantResolverMixin, serializers.ModelSerial
             else:
                 data["difficulty_urine_reasons"] = []
                 
-        # ---- Employee wellness validation ----
+        # Employee wellness validation
         if "work_stress_affecting_life" in data:
 
             if data.get("work_stress_affecting_life") is True:
@@ -250,12 +250,12 @@ class HealthAssessmentSerializer(DependantResolverMixin, serializers.ModelSerial
 
         instance = super().update(instance, validated_data)
 
-        # If chronic false → wipe all
+        # If chronic false -> wipe all
         if validated_data.get("family_chronic_illness") is False:
             FamilyIllnessRecord.objects.filter(hra=instance).delete()
             return instance
 
-        # If chronic true → and records provided
+        # If chronic true -> and records provided
         if family_records is not None:
 
             # Delete existing

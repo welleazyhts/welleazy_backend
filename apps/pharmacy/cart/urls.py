@@ -34,11 +34,11 @@ urlpatterns=[
     path("decrease/", DecreaseQuantityAPIView.as_view()),
     path("", GetCartAPIView.as_view()),
 
-    #-- Coupon ---
+    # Coupon
     path("coupon/apply/", ApplyCouponAPIView.as_view()),
     path("coupon/remove/", RemoveCouponAPIView.as_view()),
 
-    #-- Address ---
+    # Address
     path("addresses/types/", AddressTypeListAPIView.as_view()),
     path("addresses/", AddressListAPIView.as_view()),
     path("addresses/type/select/", SetAddressTypeAPIView.as_view()),
@@ -47,14 +47,14 @@ urlpatterns=[
     path("addresses/update/<int:pk>/", UpdateAddressAPIView.as_view()),
     path("delivery/estimate/", EstimateDeliveryAPIView.as_view()),
 
-    #-- Prescription ---
+    # Prescription
     path("prescription/upload/", UploadPrescriptionAPIView.as_view()),
     path("e-prescription/",ListPrescriptionsAPIView.as_view()),
     path("prescriptions/", ListPrescriptionsAPIView.as_view()),
     path("prescription/download/<int:pk>/", DownloadPrescriptionAPIView.as_view()),
     path("order/create/", PharmacyOrderCreateAPIView.as_view()), 
 
-    #-- Delivery Mode ---
+    # Delivery Mode
     path("delivery_mode/", SetDeliveryModeAPIView.as_view()),
 ]
 

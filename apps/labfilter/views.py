@@ -70,7 +70,7 @@ class DiagnosticCenterFilterAPIView(ListAPIView):
     def get_queryset(self):
         queryset = DiagnosticCenter.objects.filter(active=True, deleted_at__isnull=True)
 
-        # --- Filters ---
+        # Filters
         pincode = self.request.query_params.get("pincode")
         area = self.request.query_params.get("area")
         name = self.request.query_params.get("name")
@@ -101,7 +101,7 @@ class DiagnosticCenterFilterAPIView(ListAPIView):
             except ValueError:
                 pass
 
-        # --- Sorting by price (lowest or highest) ---
+        # Sorting by price
         if sort_price:
             if sort_price.lower() == "low":
                 queryset = queryset.annotate(min_price=Min("tests__price")).order_by("min_price")

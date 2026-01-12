@@ -36,7 +36,7 @@ class MedicineReminderViewSet(SaveUserMixin, viewsets.ModelViewSet):
             qs = qs.filter(end_date__lte=end)
         return qs
 
-    # ------------ helpers ------------
+    # helpers
     def _extract_payload(self, request):
         # Supports both:
         # - multipart with 'data' field (stringified JSON)
@@ -77,7 +77,7 @@ class MedicineReminderViewSet(SaveUserMixin, viewsets.ModelViewSet):
                 updated_by=reminder.updated_by,
             )
 
-    # ------------ create ------------
+    # create
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         payload = self._extract_payload(request)
@@ -113,7 +113,7 @@ class MedicineReminderViewSet(SaveUserMixin, viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-    # ------------ update ------------
+    # update
     @transaction.atomic
     def update(self, request, *args, **kwargs):
         reminder = self.get_object()
@@ -146,7 +146,7 @@ class MedicineReminderViewSet(SaveUserMixin, viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
 
-    # ------------ soft delete ------------
+    # soft delete
     def destroy(self, request, *args, **kwargs):
         reminder = self.get_object()
         reminder.deleted_at = timezone.now()
@@ -156,7 +156,7 @@ class MedicineReminderViewSet(SaveUserMixin, viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
 
-    # ------------ DOCUMENT MANAGEMENT ENDPOINTS ------------
+    # DOCUMENT MANAGEMENT ENDPOINTS
 
     @action(
         detail=True,
@@ -221,7 +221,7 @@ class MedicineReminderViewSet(SaveUserMixin, viewsets.ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
-    # ------------ CHOICES ENDPOINT ------------
+    # CHOICES ENDPOINT
 
     @action(detail=False, methods=["get"])
     def choices(self, request):

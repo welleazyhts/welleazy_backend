@@ -33,7 +33,7 @@ class AppointmentInvoiceDetailAPIView(APIView):
             "gst_amount": float(invoice.gst_amount),
             "total_amount": float(invoice.total_amount),
 
-            # 🔥 PAYMENT DETAILS
+            # PAYMENT DETAILS
             "payment_mode": appointment.payment_mode,
             "payment_bank": appointment.payment_bank,
             "payment_reference": appointment.payment_reference,

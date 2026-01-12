@@ -35,7 +35,7 @@ class Cart(BaseModel):
 
     @property
     def platform_fee(self):
-        return 5   # or 0 → if you want no platform fee
+        return 5   # or 0 -> if you want no platform fee
 
     @property
     def delivery_charge(self):

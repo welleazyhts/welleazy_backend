@@ -1,148 +1,10 @@
 from django.shortcuts import render
-
-# Create your views here.
-
-
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from apps.common.utils.profile_helper import filter_by_effective_user
-
-
-# class MyBookingsPagination(PageNumberPagination):
-#     page_size = 10
-
-
-# class MyBookingsViewSet(viewsets.ViewSet):
-#     permission_classes = [IsAuthenticated]
-
-#     def compute_status(self, appointment):
-#         from datetime import datetime
-
-#         if hasattr(appointment , "status") and appointment.status=="cancelled":
-#             return "cancelled"
-
-#         appt_datetime = datetime.combine(appointment.appointment_date, appointment.appointment_time)
- 
-#         now = datetime.now()
-
-#         if appt_datetime < now :
-#             return "completed"
-
-#         return "scheduled"
-
-
-#     def list_all(self, request):
-#         appointments = Appointment.objects.filter(user=request.user).order_by("-booked_on")
-#         data = []
-#         for appt in appointments:
-#             obj = AppointmentSerializer(appt, context={'request': request}).data
-#             obj["status"] = self.compute_status(appt)
-#             data.append(obj)
-
-#         return Response({"bookings": data})
-#     # -----------------------------------------
-#     # SCHEDULED
-#     # -----------------------------------------
-#     def list_scheduled(self, request):
-#         appointments = Appointment.objects.filter(user=request.user)
-#         filtered = []
-#         for appt in appointments:
-#             if self.compute_status(appt) == "scheduled":
-#                 filtered.append(AppointmentSerializer(appt).data)
-
-#         return Response({"bookings": filtered})
-
-#     # -----------------------------------------
-#     # COMPLETED
-#     # -----------------------------------------
-#     def list_completed(self, request):
-#         appointments = Appointment.objects.filter(user=request.user)
-#         filtered = []
-#         for appt in appointments:
-#             if self.compute_status(appt) == "completed":
-#                 filtered.append(AppointmentSerializer(appt).data)
-
-#         return Response({"bookings": filtered})
-
-#     # -----------------------------------------
-#     # CANCELLED
-#     # -----------------------------------------
-#     def list_cancelled(self, request):
-#         user = request.user
-#         appointments = Appointment.objects.filter(user=user)
-
-#         data = []
-#         for a in appointments:
-#             if self.compute_status(a) == "cancelled":
-#                 s = AppointmentSerializer(a).data
-#                 s["status"] = "cancelled"
-#                 data.append(s)
-
-#         return Response({"bookings": data})
-
-
-# @action(detail=False, methods=['post'], url_path="upload_report")
-# def upload_report(self, request, pk=None):
-#     appointment = self.get_object()
-
-#     if not request.FILES.get("file"):
-#         return Response({"error": "No file provided"}, status=400)
-
-#     report = MedicalReports.objects.create(
-#         appointment=appointment,
-#         file=request.FILES["file"],
-#     )
-
-#     return Response({"message": "Report uploaded", "report": MedicalReportSerializer(report).data})
-
-
-# @action(detail=False, methods=['get'], url_path="my-bookings")
-# def my_bookings(self, request):
-#     appointments = Appointment.objects.filter(user=request.user).order_by("-appointment_date")
-#     serializer = AppointmentShortSerializer(appointments, many=True)
-#     return Response(serializer.data)
-
-
-
-# @action(detail=True, methods=['post'], url_path="upload-recording")
-# def upload_recording(self, request, pk=None):
-#     appointment = self.get_object()
-
-#     file = request.FILES.get("file")
-#     if not file:
-#         return Response({"error": "file missing"}, status=400)
-
-#     appointment.voice_recording = file
-#     appointment.save()
-#     return Response({"message": "Voice recording uploaded", "url": appointment.voice_recording.url})
-
-# @action(detail=True, methods=['post'], url_path="upload-report")
-# def upload_report(self, request, pk=None):
-#     appointment = self.get_object()
-#     file = request.FILES.get("file")
-
-#     if not file:
-#         return Response({"error": "file missing"}, status=400)
-
-#     report = MedicalReports.objects.create(appointment=appointment, file=file)
-#     return Response({"message": "Report uploaded", "id": report.id, "file": report.file.url})
-
-# @action(detail=True, methods=['get'], url_path="voucher")
-# def voucher(self, request, pk=None):
-#     appointment = self.get_object()
-
-#     if not hasattr(appointment, "voucher"):
-#         return Response({"error": "Voucher not generated yet"}, status=404)
-
-#     serializer = AppointmentVoucherSerializer(appointment.voucher)
-#     return Response(serializer.data)
-
-
-# ...existing code...
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status as http_status
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse, Http404
@@ -251,7 +113,7 @@ class MyBookingsCleanAPIView(APIView):
 
         results = []
 
-        # ------------------------ APPOINTMENTS ------------------------
+        # APPOINTMENTS
         appointments = Appointment.objects.filter(user=user).select_related("user")
         appointments = filter_by_effective_user(appointments, request)
         
@@ -291,7 +153,7 @@ class MyBookingsCleanAPIView(APIView):
             })
 
 
-        # ------------------------ PHARMACY ORDERS ------------------------
+        # PHARMACY ORDERS
         for p in PharmacyOrder.objects.filter(user=user).select_related("address"):
             if not match_status(p.status):
                 continue
@@ -329,7 +191,7 @@ class MyBookingsCleanAPIView(APIView):
             })
 
 
-        # ------------------------ PHARMACY COUPONS ------------------------
+        # PHARMACY COUPONS
         for c in PharmacyCoupon.objects.filter(user=user).select_related("vendor"):
             if not match_status(c.status):
                 continue
@@ -357,7 +219,7 @@ class MyBookingsCleanAPIView(APIView):
             })
 
 
-        # ------------------------ LAB TEST BOOKINGS ------------------------
+        # LAB TEST BOOKINGS
         for l in LabTestBooking.objects.filter(user=user):
             if not match_status(l.status):
                 continue
@@ -378,7 +240,7 @@ class MyBookingsCleanAPIView(APIView):
             })
 
 
-        # ------------------------ SPONSORED PACKAGE BOOKINGS ------------------------
+        # SPONSORED PACKAGE BOOKINGS
         for s in SponsoredPackageBooking.objects.filter(user=user):
             if not match_status(s.status):
                 continue
@@ -399,7 +261,7 @@ class MyBookingsCleanAPIView(APIView):
             })
 
 
-        # ------------------------ HEALTH PACKAGE BOOKINGS ------------------------
+        # HEALTH PACKAGE BOOKINGS
         for h in HealthPackageBooking.objects.filter(user=user):
             if not match_status(h.status):
                 continue
@@ -420,9 +282,8 @@ class MyBookingsCleanAPIView(APIView):
                     'view_voucher_url': f'/api/my-bookings/health-package/{h.id}/voucher/'
                 }
             })
-# ------------------------ SORT FINAL LIST ------------------------
-        # ------------------------ SORT FINAL LIST ------------------------
-        # --- Service filter (FINAL) ---
+# SORT FINAL LIST
+        # Service filter (FINAL)
 
         if service:
             service=service.lower().strip()
@@ -462,7 +323,7 @@ class MyBookingsCleanAPIView(APIView):
         return Response(results_sorted)
 
 
-# APPOINTMENT ----------
+# APPOINTMENT
 # class AppointmentPrescriptionDownloadView(APIView):
 #     def get(self, request, pk):
 #         ap = get_object_or_404(DoctorPrescription, appointment__id=pk)
@@ -520,7 +381,7 @@ class MedicalReportUploadReportView(APIView):
         })
 
 
-#PHARMACY ORDER---
+# PHARMACY ORDER
 
 
 class PharmacyOrderMedicinesView(APIView):

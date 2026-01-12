@@ -90,7 +90,7 @@ class MedicineDetails(BaseModel):
 
 
 
-# APPOLO PHARMACY MEDICINE COUPON GENERATION---
+# APPOLO PHARMACY MEDICINE COUPON GENERATION
 
 class MedicineCoupon(BaseModel):
     COUPON_TYPE = (
@@ -144,7 +144,7 @@ class PharmacyOrder(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     prescription_file = models.FileField(upload_to="pharmacy/prescriptions/", null=True, blank=True)
 
-    # Notification Related----
+    # Notification Related
 
     reminder_sent = models.BooleanField(default=False)
 

@@ -112,7 +112,7 @@ class CartItem(BaseModel):
     consultation_fee = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
 
 
-    #EYE DENTAL CARE APPOINTMENTS----
+    # EYE DENTAL CARE APPOINTMENTS
   
     # Service_type=models.CharField(max_length=20 , choices=SERVICE_TYPES , null=True , blank=True)
     # vendor = models.ForeignKey(Vendor , on_delete=models.CASCADE , null=True , blank=True)
@@ -185,20 +185,20 @@ class Appointment(BaseModel):
     updated_at = models.DateTimeField(auto_now=True)
     note = models.TextField(blank=True, null=True)
 
-    # DOCTOR APPOINTMENT----
+    # DOCTOR APPOINTMENT
 
     doctor=models.ForeignKey(DoctorProfessionalDetails , null=True , blank=True , on_delete=models.CASCADE)
     patient_name = models.CharField(max_length=150 , blank=True , null=True)
     mode=models.CharField(max_length=10, choices=CartItem.MODE_CHOICES , null=True , blank=True)
 
-    # EYE & DENTAL APPOINTMENT----
+    # EYE & DENTAL APPOINTMENT
 
     # vendor = models.ForeignKey(Vendor , on_delete=models.CASCADE , null=True , blank=True)
     # eye_vendor_centers= models.ForeignKey(EyeVendorAddress , on_delete= models.CASCADE , null=True , blank=True)
     # dental_vendor_centers = models.ForeignKey(DentalVendorAddress , on_delete=models.CASCADE , null=True , blank=True)
 
 
-    # PAYMENT RELATED----
+    # PAYMENT RELATED
 
     payment_mode = models.CharField(max_length=50, null=True, blank=True)  
     payment_bank = models.CharField(max_length=100, null=True, blank=True)
@@ -224,7 +224,7 @@ class AppointmentItem(BaseModel):
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
 
-# DOCTOR RELATED-----
+# DOCTOR RELATED
 
 class DoctorAvailability(models.Model):
 

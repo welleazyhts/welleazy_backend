@@ -14,9 +14,7 @@ from apps.addresses.models import Address
 User = settings.AUTH_USER_MODEL
 
 
-# ---------------------------------------
-#  EYE TREATMENTS
-# ---------------------------------------
+# EYE TREATMENTS
 class EyeTreatment(BaseModel):
     name = models.CharField(max_length=255)
     short_description = models.TextField(blank=True)
@@ -27,9 +25,7 @@ class EyeTreatment(BaseModel):
         return self.name
 
 
-# ---------------------------------------
-#  DENTAL TREATMENTS
-# ---------------------------------------
+# DENTAL TREATMENTS
 class DentalTreatment(BaseModel):
     name = models.CharField(max_length=255)
     short_description = models.TextField(blank=True)
@@ -104,7 +100,7 @@ class DentalTreatment(BaseModel):
     
 
 
-# EYE TREATMENT BOOKING------
+# EYE TREATMENT BOOKING
 
 
 # class EyeRequest(BaseModel):
@@ -175,7 +171,7 @@ class DentalTreatment(BaseModel):
 #     def __str__(self):
 #         return f"Eye Voucher - {self.request_id}"
 
-# # DENTAL TREATMENT BOOKING-----
+# DENTAL TREATMENT BOOKING
 
 # class DentalRequest(BaseModel):
 

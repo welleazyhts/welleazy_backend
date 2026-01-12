@@ -188,9 +188,7 @@ class MedicalBillRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
         except json.JSONDecodeError:
             raise ValidationError({"error": "Invalid JSON format in 'data' field"})
 
-    # --------------------------
     # Save fields
-    # --------------------------
     def _save_record_fields(self, record, validated):
         fields = [
             "record_name", "record_date", "record_bill_number",

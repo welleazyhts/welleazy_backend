@@ -43,7 +43,7 @@ class DependantListCreateView(generics.ListCreateAPIView):
             "Dependant Added",
             f"{dependant.name} was added as your family member.",
             item_type="dependant"
-        )   # ← FIXED: Do NOT pass user
+        )   # FIXED: Do NOT pass user
 
 
 
@@ -72,7 +72,7 @@ class DependantDetailView(generics.RetrieveUpdateDestroyAPIView):
         )
 
 
-# ============ Switch Profile Views ============
+# Switch Profile Views
 
 class SwitchProfileRequestView(APIView):
     #Request to switch to a dependant's profile - generates and sends OTP.

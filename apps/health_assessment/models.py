@@ -157,7 +157,7 @@ class HealthAssessment(BaseModel):
     )
 
 
-    # -------- Owner / subject --------
+    # Owner / subject
     FOR_WHOM_CHOICES = (
         ("self", "Self"),
         ("dependant", "Dependant"),
@@ -188,12 +188,12 @@ class HealthAssessment(BaseModel):
     )
     current_step = models.PositiveSmallIntegerField(default=1)  # 1–15
 
-    # -------- STEP 3: Mood today --------
+    # STEP 3: Mood today
     mood_today = models.PositiveSmallIntegerField(
         choices=MOOD_CHOICES, null=True, blank=True
     )
 
-    # -------- STEP 4: Basic profile --------
+    # STEP 4: Basic profile
     height_unit = models.CharField(
         max_length=10, choices=HEIGHT_UNIT_CHOICES, null=True, blank=True
     )
@@ -215,7 +215,7 @@ class HealthAssessment(BaseModel):
         max_length=20, null=True, blank=True
     )  # e.g. "healthy" / "unhealthy"
 
-    # -------- STEP 5: Presenting illness --------
+    # STEP 5: Presenting illness
 
     presenting_illness = models.CharField(
         max_length=50,
@@ -230,14 +230,14 @@ class HealthAssessment(BaseModel):
         blank=True
     )
 
-    # -------- STEP 6: Past history --------
+    # STEP 6: Past history
     chronic_illness = models.BooleanField(null=True, blank=True)
     chronic_illness_details = models.CharField(max_length=255, null=True, blank=True)
 
     surgery_history = models.BooleanField(null=True, blank=True)
     surgery_history_details = models.CharField(max_length=255, null=True, blank=True)
 
-    # -------- STEP 7: Sleep assessment --------
+    # STEP 7: Sleep assessment
     sleep_hours = models.CharField(
         max_length=10, choices=SLEEP_HOURS_CHOICES, null=True, blank=True
     )
@@ -246,7 +246,7 @@ class HealthAssessment(BaseModel):
 
     tired_morning = models.BooleanField(null=True, blank=True)
 
-    # -------- STEP 8: Eating habits --------
+    # STEP 8: Eating habits
     junk_food_freq = models.CharField(
         max_length=20, choices=FREQ5_CHOICES, null=True, blank=True
     )
@@ -266,7 +266,7 @@ class HealthAssessment(BaseModel):
         max_length=20, choices=FREQ5_CHOICES, blank=True, null=True
     )
 
-    # -------- STEP 9: Drinking habits --------
+    # STEP 9: Drinking habits
     alcohol_current = models.BooleanField(null=True, blank=True)
     alcohol_frequency = models.CharField(max_length=20, choices=ALCOHOL_FREQUENCY_CHOICES, null=True, blank=True)  
     alcohol_quantity = models.CharField(max_length=10, null=True, blank=True)  
@@ -276,7 +276,7 @@ class HealthAssessment(BaseModel):
     alcohol_past = models.BooleanField(null=True, blank=True)
     alcohol_quit_period = models.CharField(max_length=20, choices=ALCOHOL_QUIT_CHOICES, null=True, blank=True)
 
-    # -------- STEP 10: Smoking / tobacco --------
+    # STEP 10: Smoking / tobacco
     tobacco_current = models.BooleanField(null=True, blank=True)
     tobacco_type = models.CharField(max_length=20, choices=TOBACCO_TYPE_CHOICES, null=True, blank=True)
     tobacco_duration = models.CharField(max_length=20, choices=TOBACCO_DURATION_CHOICES, null=True, blank=True)
@@ -286,7 +286,7 @@ class HealthAssessment(BaseModel):
     tobacco_quit_period = models.CharField(max_length=20, choices=TOBACCO_QUIT_CHOICES, null=True, blank=True)
 
 
-    # -------- STEP 11: Hereditary / meds --------
+    # STEP 11: Hereditary / meds
     family_chronic_illness = models.BooleanField(null=True, blank=True)
     checkup_frequency = models.CharField(
         max_length=20, choices=CHECKUP_FREQ_CHOICES, null=True, blank=True
@@ -295,13 +295,13 @@ class HealthAssessment(BaseModel):
     stopped_meds_without_doctor = models.BooleanField(null=True, blank=True)
     other_alt_medicine = models.BooleanField(null=True, blank=True)
 
-    # -------- STEP 12: Bowel / bladder --------
+    # STEP 12: Bowel / bladder
     difficulty_urine = models.BooleanField(null=True, blank=True)
     difficulty_urine_reasons = models.CharField(max_length=255, choices=URINE_DIFFICULTY_REASON_CHOICES, null=True, blank=True)
 
     difficulty_stools = models.BooleanField(null=True, blank=True)
 
-    # -------- STEP 13: Fitness profile --------
+    # STEP 13: Fitness profile
     stretch_duration = models.CharField(
         max_length=10, choices=DURATION4_CHOICES, null=True, blank=True
     )
@@ -318,18 +318,18 @@ class HealthAssessment(BaseModel):
         max_length=20, choices=OTHER_ACTIVITY_CHOICES, null=True, blank=True
     )
 
-    # -------- STEP 14: Mental wellness --------
+    # STEP 14: Mental wellness
     low_interest = models.BooleanField(null=True, blank=True)
     depressed = models.BooleanField(null=True, blank=True)
     sleep_appetite_issue = models.BooleanField(null=True, blank=True)
     low_energy = models.BooleanField(null=True, blank=True)
     anxious = models.BooleanField(null=True, blank=True)
 
-    # -------- STEP 15: Employee wellness --------
+    # STEP 15: Employee wellness
     work_stress_affecting_life = models.BooleanField(null=True, blank=True)
     work_stress_reasons = models.CharField(max_length=255, choices=WORK_STRESS_REASON_CHOICES, null=True, blank=True)
 
-    # -------- Result / report --------
+    # Result / report
     total_score = models.IntegerField(null=True, blank=True)
     risk_category = models.CharField(
         max_length=10, choices=RISK_CATEGORY_CHOICES, null=True, blank=True
@@ -350,7 +350,7 @@ class HealthAssessment(BaseModel):
         return f"HRA #{self.id} for {who}"
 
 
-# -------------------- FAMILY ILLNESS RECORD MODEL --------------------
+# FAMILY ILLNESS RECORD MODEL
 
 class FamilyIllnessRecord(models.Model):
     DISEASE_CHOICES = (

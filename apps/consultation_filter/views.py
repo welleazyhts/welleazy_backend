@@ -26,7 +26,7 @@ import random
 
 
 
- # DOCTOR SPECIALITY---
+ # DOCTOR SPECIALITY
 
 class DoctorSpecializationViewSet(viewsets.ModelViewSet):
     
@@ -38,7 +38,7 @@ class DoctorSpecializationViewSet(viewsets.ModelViewSet):
         # Return list of tests (from external API or local DB).
         client_api_url = getattr(settings, "CLIENT_DOCTORSPECIALITY_API_URL", None)
 
-        # --- Optional: Fetch from Client API ---
+        # Optional: Fetch from Client API
         if client_api_url:
             try:
                 headers = {}
@@ -107,7 +107,7 @@ class DoctorSpecializationViewSet(viewsets.ModelViewSet):
     
 
 
-    # LANGUAGE SELECTION-----
+    # LANGUAGE SELECTION
 
 
 class LanguageViewSet(viewsets.ModelViewSet):
@@ -121,7 +121,7 @@ class LanguageViewSet(viewsets.ModelViewSet):
     def list(self, request):
         client_api_url = getattr(settings, "CLIENT_LANGUAGE_API_URL", None)
 
-        # --- Optional: Fetch from Client API ---
+        # Optional: Fetch from Client API
         if client_api_url:
             try:
                 headers = {}
@@ -151,7 +151,7 @@ class LanguageViewSet(viewsets.ModelViewSet):
                 )
 
   
-      # LOCAL DB---
+      # LOCAL DB
        
         languages = self.get_queryset()
         serializer = self.get_serializer(languages, many=True)
@@ -188,7 +188,7 @@ class LanguageViewSet(viewsets.ModelViewSet):
     
 
 
-    # PINCODES---
+    # PINCODES
 
 
 
@@ -203,7 +203,7 @@ class PincodeViewSet(viewsets.ModelViewSet):
     def list(self, request):
         client_api_url = getattr(settings, "CLIENT_PINCODE_API_URL", None)
 
-        # --- Optional: Fetch from Client API ---
+        # Optional: Fetch from Client API
         if client_api_url:
             try:
                 headers = {}

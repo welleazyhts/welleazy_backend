@@ -19,7 +19,7 @@ from django.conf import settings
 user=settings.AUTH_USER_MODEL
 
 
-# ---------------- sample data loader ----------------
+# Sample data loader
 def create_sample_data(user):
     a = Appointment.objects.create(user=user, case_id='WX48089', status='cancelled', patient_name='Hari', appointment_type='Tele Consultation', appointment_date='2025-11-19', appointment_time='11:00:00')
     p = PharmacyOrder.objects.create(user=user, order_id='PHA0109', status='order_cancelled', patient_name='Hari', order_type='home_delivery', ordered_date='2025-11-18', expected_delivery='2025-11-19', total_amount=126.00, address='Bangalore, Karnataka')
@@ -30,5 +30,5 @@ def create_sample_data(user):
     h = HealthPackageBooking.objects.create(user=user, booking_id='HP300', status='completed', patient_name='Hari', package_name='Diabetes Panel')
 
 
-# ---------------- Example screenshot path (use as URL in frontend) ----------------
+# Example screenshot path
 EXAMPLE_SCREENSHOT_PATH = '/mnt/data/4beefc85-051a-42ba-a06b-434b6dc5b111.png'
