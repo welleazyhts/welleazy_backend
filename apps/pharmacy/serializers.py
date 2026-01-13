@@ -5,18 +5,21 @@ class PharmacyVendorSerializer(serializers.ModelSerializer):
     class Meta:
         model = PharmacyVendor
         fields = "__all__"
+        read_only_fields = ["created_by", "updated_by", "created_at", "updated_at", "deleted_at"]
 
 
 class PharmacyCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = PharmacyCategory
         fields = "__all__"
+        read_only_fields = ["created_by", "updated_by", "created_at", "updated_at", "deleted_at"]
 
 
 class PharmacyBannerSerializer(serializers.ModelSerializer):
     class Meta:
         model = PharmacyBanner
         fields = "__all__"
+        read_only_fields = ["created_by", "updated_by", "created_at", "updated_at", "deleted_at"]
 
 class MedicinesDetailsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,6 +53,7 @@ class MedicineSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medicine
         fields = "__all__"
+        read_only_fields = ["created_by", "updated_by", "created_at", "updated_at", "deleted_at"]
 
 
 

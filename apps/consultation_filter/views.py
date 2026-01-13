@@ -252,7 +252,6 @@ class PincodeViewSet(viewsets.ModelViewSet):
         try:
             pincode = Pincode.objects.select_related("city").get(code=code)
             serializer = self.get_serializer(pincode)
-            serializer.save(created_by=self.request.user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Pincode.DoesNotExist:
             return Response({"error": "Pincode not found"}, status=status.HTTP_404_NOT_FOUND)

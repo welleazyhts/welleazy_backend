@@ -93,7 +93,10 @@ class DiagnosticCenterViewSet(viewsets.ModelViewSet):
         )
 
     def destroy(self, request, *args, **kwargs):
-        super().destroy(request, *args, **kwargs)
+        from django.utils import timezone
+        instance = self.get_object()
+        instance.deleted_at = timezone.now()
+        instance.save()
         return Response(
             {
                 "message": "Diagnostic center deleted successfully"

@@ -64,6 +64,8 @@ class DoctorViewSet(viewsets.ModelViewSet):
             return Response({"message": "No doctors available from client API."},
                             status=status.HTTP_404_NOT_FOUND)
 
+        return Response(filtered, status=status.HTTP_200_OK)
+
 
 
 class DoctorPersonalViewSet(viewsets.ModelViewSet):

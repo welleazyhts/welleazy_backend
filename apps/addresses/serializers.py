@@ -60,14 +60,19 @@ class AddressSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        dependant = self.context.get("dependant")
-        user = self.context["request"].user
+        # Only assign automatically if not already provided by the view
+        if "user" not in validated_data and "dependant" not in validated_data:
+            dependant = self.context.get("dependant")
+            user = self.context["request"].user
 
-        # Assign user/dependant automatically
-        if dependant:
-            validated_data["dependant"] = dependant
-        else:
-            validated_data["user"] = user
+            if dependant:
+                validated_data["dependant"] = dependant
+            else:
+                validated_data["user"] = user
+
+        # Extract for default clearing logic
+        user = validated_data.get("user")
+        dependant = validated_data.get("dependant")
 
         # If this address is default, unset previous defaults
         if validated_data.get("is_default"):

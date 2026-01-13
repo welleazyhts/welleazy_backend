@@ -216,6 +216,14 @@ class Appointment(BaseModel):
     def confirmed(self):
         return self.status.lower() == 'confirmed'
 
+    @property
+    def appointment_date(self):
+        return self.scheduled_at.date() if self.scheduled_at else None
+
+    @property
+    def appointment_time(self):
+        return self.scheduled_at.time() if self.scheduled_at else None
+
 class AppointmentItem(BaseModel):
     appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name="items", null=True)
     test = models.ForeignKey(Test, on_delete=models.CASCADE, null=True)

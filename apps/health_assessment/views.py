@@ -78,24 +78,6 @@ class HealthAssessmentViewSet(SaveUserMixin, viewsets.ModelViewSet):
             context={"request": request},
         )
         serializer.is_valid(raise_exception=True)
-        records = request.data.get("family_illness_records")
-
-        # Remove all existing records if user said "No"
-        if request.data.get("family_chronic_illness") is False:
-            instance.family_illness_records.all().delete()
-
-        # If user submitted records
-        elif records:
-            instance.family_illness_records.all().delete()
-            new_records = [
-                FamilyIllnessRecord(
-                    hra=instance,
-                    dependant_id=r["dependant"],
-                    disease=r["disease"]
-                ) for r in records
-            ]
-            FamilyIllnessRecord.objects.bulk_create(new_records)
-
         hra = serializer.save(
             updated_by=request.user,
             current_step=step,

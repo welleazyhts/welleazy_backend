@@ -49,6 +49,8 @@ class PharmacyBannerListAPIView(generics.ListAPIView):
 
 
 class CreatePharmacyBannerAPIView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+
     def post(self, request):
         serializer = PharmacyBannerSerializer(data=request.data)
         if serializer.is_valid():
@@ -138,7 +140,7 @@ class VendorMedicineListAPIView(APIView):
         except PharmacyVendor.DoesNotExist:
             return Response({"error": "Vendor not found"}, status=404)
 
-        queryset = Medicine.objects.filter(vendor=vendor)
+        queryset = Medicine.objects.filter(vendor=vendor).order_by("id")
 
         paginator = Paginator(queryset, page_size)
         page_obj = paginator.get_page(page)
@@ -237,7 +239,7 @@ class PharmacyMedicineFilterAPIView(APIView):
         page = int(request.data.get("page", 1))
         page_size = int(request.data.get("page_size", 20))
 
-        queryset = Medicine.objects.all()
+        queryset = Medicine.objects.all().order_by("id")
 
         # Search filter
         if search:

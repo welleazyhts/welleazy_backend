@@ -1,4 +1,5 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from django.apps import apps
@@ -8,6 +9,7 @@ from .compare_engine import filter_record_for_compare, get_model_from_module, di
 from django.apps import apps as django_apps
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def compare_records(request):
     module = request.data.get("module")
     record_ids = request.data.get("record_ids")

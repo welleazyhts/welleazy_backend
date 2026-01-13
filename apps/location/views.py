@@ -2,6 +2,7 @@ from rest_framework import viewsets, permissions, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
+from django.utils import timezone
 
 from .models import State, City
 from .serializers import StateSerializer, CitySerializer
@@ -27,6 +28,11 @@ class StateViewSet(viewsets.ModelViewSet):
             updated_by=self.request.user
         )
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.deleted_at = timezone.now()
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CityViewSet(viewsets.ModelViewSet):
@@ -47,6 +53,12 @@ class CityViewSet(viewsets.ModelViewSet):
         serializer.save(
             updated_by=self.request.user
         )
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.deleted_at = timezone.now()
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=["get"], url_path="by-state")
     def by_state(self, request):
