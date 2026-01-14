@@ -19,7 +19,11 @@ from rest_framework.exceptions import ValidationError
 
 class DoctorViewSet(viewsets.ModelViewSet):
     permission_classes=[IsAuthenticated]
-    queryset = DoctorProfessionalDetails.objects.all()
+    queryset = (
+        DoctorProfessionalDetails.objects.select_related("doctor__city", "vendor")
+        .prefetch_related("specialization", "language")
+        .all()
+    )
     serializer_class = DoctorProfessionalDetailsSerializer
 
     
@@ -79,7 +83,11 @@ class DoctorPersonalViewSet(viewsets.ModelViewSet):
     
 
 class DoctorProfessionalViewSet(viewsets.ModelViewSet):
-    queryset = DoctorProfessionalDetails.objects.all()
+    queryset = (
+        DoctorProfessionalDetails.objects.select_related("doctor__city", "vendor")
+        .prefetch_related("specialization", "language")
+        .all()
+    )
     serializer_class = DoctorProfessionalDetailsSerializer
 
     

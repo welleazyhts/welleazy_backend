@@ -1,6 +1,7 @@
 # apps/payments/views.py
 
 import razorpay
+from decimal import Decimal
 from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -24,7 +25,7 @@ class CreateRazorpayOrderAPIView(APIView):
             return Response({"detail": "Cart is empty"}, status=400)
 
         # Final payable amount after discounts
-        final_amount = sum(float(item.final_price or 0) for item in items)
+        final_amount = sum(Decimal(str(item.final_price or 0)) for item in items)
         amount_paise = int(final_amount * 100)   # Razorpay expects paise
 
         client = razorpay.Client(
@@ -91,42 +92,130 @@ class RazorpayVerifyPaymentAPIView(APIView):
         if not items.exists():
             return Response({"detail": "Cart is empty"}, status=400)
 
+        from datetime import datetime
         created = []
 
         # Create appointments
         for item in items:
-            appt = AppointmentModel.objects.create(
-                user=request.user,
-                diagnostic_center=item.diagnostic_center,
-                visit_type=item.visit_type,
-                for_whom=item.for_whom,
-                dependant=item.dependant,
-                address=item.address,
-                note=item.note,
-                status="confirmed",
-                # Save Payment Info
-                payment_transaction_id=payment_id,
-                payment_mode=payment_mode,
-                payment_bank=payment_bank,
-                payment_last4=payment_last4,
-                payment_reference=order_id,
-                created_by=request.user,
-                updated_by=request.user
-            )
+            scheduled_at = None
 
-            for t in item.tests.all():
-                AppointmentItem.objects.create(
-                    appointment=appt,
-                    test=t,
-                    price=t.price
+            if item.appointment_date and item.appointment_time:
+                scheduled_at = datetime.combine(item.appointment_date, item.appointment_time)
+            elif item.selected_date and item.selected_time:
+                scheduled_at = datetime.combine(item.selected_date, item.selected_time)
+
+            # Appointment creation common data
+            common_payment_info = {
+                "payment_transaction_id": payment_id,
+                "payment_mode": payment_mode,
+                "payment_bank": payment_bank,
+                "payment_last4": payment_last4,
+                "payment_reference": order_id,
+            }
+
+            # DOCTOR APPOINTMENT
+            if item.item_type == "doctor_appointment":
+                appt = AppointmentModel.objects.create(
+                    user=request.user,
+                    item_type="doctor_appointment",
+                    doctor=item.doctor,
+                    for_whom=item.for_whom,
+                    dependant=item.dependant,
+                    note=item.note,
+                    patient_name=item.patient_name,
+                    mode=item.mode,
+                    scheduled_at=scheduled_at,
+                    status="confirmed",
+                    created_by=request.user,
+                    updated_by=request.user,
+                    **common_payment_info
                 )
+                created.append({
+                    "appointment_id": appt.id,
+                    "type": "doctor_appointment",
+                    "doctor": item.doctor.doctor.full_name if item.doctor else "Unknown",
+                    "transaction_id": payment_id
+                })
 
-            created.append({
-                "appointment_id": appt.id,
-                "diagnostic_center": appt.diagnostic_center.name,
-                "tests": [t.name for t in item.tests.all()],
-                "transaction_id": payment_id
-            })
+            # LAB APPOINTMENT (TEST)
+            elif item.item_type == "test":
+                appt = AppointmentModel.objects.create(
+                    user=request.user,
+                    item_type="lab_appointment",
+                    diagnostic_center=item.diagnostic_center,
+                    visit_type=item.visit_type,
+                    for_whom=item.for_whom,
+                    dependant=item.dependant,
+                    address=item.address,
+                    note=item.note,
+                    scheduled_at=scheduled_at,
+                    status="confirmed",
+                    created_by=request.user,
+                    updated_by=request.user,
+                    **common_payment_info
+                )
+                for t in item.tests.all():
+                    AppointmentItem.objects.create(
+                        appointment=appt,
+                        test=t,
+                        price=t.price
+                    )
+                created.append({
+                    "appointment_id": appt.id,
+                    "type": "lab_appointment",
+                    "diagnostic_center": appt.diagnostic_center.name if appt.diagnostic_center else "Unknown",
+                    "transaction_id": payment_id
+                })
+
+            # HEALTH PACKAGE
+            elif item.item_type == "health_package" and item.health_package:
+                appt = AppointmentModel.objects.create(
+                    user=request.user,
+                    item_type="health_package",
+                    diagnostic_center=item.diagnostic_center,
+                    for_whom=item.for_whom,
+                    dependant=item.dependant,
+                    scheduled_at=scheduled_at,
+                    note=item.note,
+                    status="confirmed",
+                    created_by=request.user,
+                    updated_by=request.user,
+                    **common_payment_info
+                )
+                for t in item.health_package.tests.all():
+                    AppointmentItem.objects.create(appointment=appt, test=t, price=t.price)
+                
+                created.append({
+                    "appointment_id": appt.id,
+                    "type": "health_package",
+                    "package": item.health_package.name,
+                    "transaction_id": payment_id
+                })
+
+            # SPONSORED PACKAGE
+            elif item.item_type == "sponsored_package" and item.sponsored_package:
+                appt = AppointmentModel.objects.create(
+                    user=request.user,
+                    item_type="sponsored_package",
+                    diagnostic_center=item.diagnostic_center,
+                    for_whom=item.for_whom,
+                    dependant=item.dependant,
+                    scheduled_at=scheduled_at,
+                    note=item.note,
+                    status="confirmed",
+                    created_by=request.user,
+                    updated_by=request.user,
+                    **common_payment_info
+                )
+                for t in item.sponsored_package.tests.all():
+                    AppointmentItem.objects.create(appointment=appt, test=t, price=t.price)
+
+                created.append({
+                    "appointment_id": appt.id,
+                    "type": "sponsored_package",
+                    "package": item.sponsored_package.name,
+                    "transaction_id": payment_id
+                })
 
         # Empty cart after payment
         cart.items.all().delete()
@@ -171,8 +260,8 @@ class MyTransactionsAPIView(APIView):
         # Aggregated list for transactions
         transactions_list = []
         
-        total_spent = 0.0
-        total_pending = 0.0
+        total_spent = Decimal('0.00')
+        total_pending = Decimal('0.00')
         
         # Buckets (aligning with my_bookings)
         COMPLETED_STATUS = ['completed', 'delivered', 'done', 'confirmed', 'paid']
@@ -181,7 +270,7 @@ class MyTransactionsAPIView(APIView):
         # Process Appointments
         for appt in appointments:
             appt_data = MyTransactionSerializer(appt).data
-            amount = float(appt_data.get('amount') or 0)
+            amount = Decimal(str(appt_data.get('amount') or 0))
             
             if appt.status.lower() in COMPLETED_STATUS:
                 total_spent += amount
@@ -192,7 +281,7 @@ class MyTransactionsAPIView(APIView):
             
         # Process Pharmacy Orders
         for order in pharmacy_orders:
-            amount = float(order.total_amount or 0)
+            amount = Decimal(str(order.total_amount or 0))
             
             if order.status.lower() in COMPLETED_STATUS:
                 total_spent += amount

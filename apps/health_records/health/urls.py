@@ -25,5 +25,3 @@ urlpatterns = [
     path('choices/', health_record_choices, name='health_record_choices'),
     path("blood-group/", blood_group, name="blood-group"),
 ]
-
-urlpatterns += router.urls

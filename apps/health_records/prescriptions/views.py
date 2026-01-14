@@ -275,14 +275,17 @@ class PrescriptionRecordViewSet(SaveUserMixin, viewsets.ModelViewSet):
                         "doctor_specialization": f"Invalid specialization id: {spec_id}"
                     })
         
-        # Foreign key: dependant      
+            # Foreign key: dependant      
         if "dependant" in validated:
             dep_id = validated["dependant"]
 
             if dep_id is None:
                 record.dependant = None
             else:
-                record.dependant = Dependant.objects.get(id=dep_id)
+                try:
+                    record.dependant = Dependant.objects.get(id=dep_id, user=self.request.user)
+                except Dependant.DoesNotExist:
+                    raise ValidationError({"dependant": f"Invalid dependant id for this user: {dep_id}"})
 
     def _save_parameters(self, record, validated, request):
         # Save parameters (create/delete) - supports both keep_parameters and parameters

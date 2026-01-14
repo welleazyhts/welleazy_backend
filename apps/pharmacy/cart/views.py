@@ -101,11 +101,12 @@ class RemoveCartItemAPIView(APIView):
 
 
 class IncreaseQuantityAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         item_id = request.data.get("item_id")
 
-        cart_item = get_object_or_404(CartItem, id=item_id)
+        cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
         cart_item.quantity += 1
         cart_item.save()
 
@@ -113,11 +114,12 @@ class IncreaseQuantityAPIView(APIView):
     
 
 class DecreaseQuantityAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         item_id = request.data.get("item_id")
 
-        cart_item = get_object_or_404(CartItem, id=item_id)
+        cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
         cart_item.quantity -= 1
 
         if cart_item.quantity <= 0:
@@ -132,7 +134,9 @@ class GetCartAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        cart, _ = Cart.objects.get_or_create(user=request.user)
+        cart, _ = Cart.objects.prefetch_related(
+            'items__medicine__vendor'
+        ).get_or_create(user=request.user)
 
         # If cart has NO items
         if cart.items.count() == 0:
@@ -161,6 +165,7 @@ class GetCartAPIView(APIView):
 
 
 class ApplyCouponAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         user = request.user
@@ -184,6 +189,7 @@ class ApplyCouponAPIView(APIView):
     
 
 class RemoveCouponAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         user = request.user
 
@@ -505,31 +511,10 @@ class PharmacyOrderCreateAPIView(APIView):
         if not cart.delivery_mode:
             return Response({"error": "Please choose a delivery mode"}, status=400)
 
-        # 2. Calculate totals
-        subtotal = cart.total_selling
-        coupon_discount = 0
-
-        if cart.coupon:
-            coupon=cart.coupon
-
-            if subtotal >= cart.coupon.min_cart_value:
-
-                if hasattr(coupon, "discount_percent") and coupon.discount_percent:
-                    coupon_discount = round((subtotal *coupon.discount_percent / 100), 2)
-                
-                elif hasattr(coupon, "discount_amount") and coupon.discount_amount:
-                    coupon_discount= float(coupon.discount_amount)
-                elif hasattr(coupon, "discount_amount") and coupon.discount_amount:
-                    coupon_discount = float(coupon.discount_amount)
-
-                # 2C. Max discount (optional)
-                if hasattr(coupon, "max_discount_amount") and coupon.max_discount_amount:
-                    coupon_discount = min(
-                        coupon_discount,
-                        float(coupon.max_discount_amount)
-                    )
-
-        total_amount = max(subtotal - coupon_discount, 0)
+        # 2. Use cart total with fees and discounts
+        total_amount = float(cart.total_pay)
+        subtotal = float(cart.total_selling)
+        coupon_discount = float(cart.coupon_discount)
 
      
         # 3. Delivery Date

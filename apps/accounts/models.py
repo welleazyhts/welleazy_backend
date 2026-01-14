@@ -96,6 +96,10 @@ class PasswordResetToken(models.Model):
     def is_valid(self):
         return (not self.is_used) and timezone.now() < self.expires_at
 
+    def mark_used(self):
+        self.is_used = True
+        self.save()
+
 class UserOTP(models.Model):
     METHOD_CHOICES = (
         ('email', 'Email'),

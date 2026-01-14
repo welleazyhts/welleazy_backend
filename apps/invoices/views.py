@@ -4,6 +4,7 @@ from django.shortcuts import render
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .models import AppointmentInvoice
 from reportlab.pdfgen import canvas
@@ -12,6 +13,7 @@ from io import BytesIO
 
 
 class AppointmentInvoiceDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, appointment_id):
         invoice = get_object_or_404(AppointmentInvoice,
@@ -48,6 +50,7 @@ class AppointmentInvoiceDetailAPIView(APIView):
 
 
 class AppointmentInvoicePDFAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, appointment_id):
         invoice = get_object_or_404(

@@ -150,7 +150,15 @@ class UserCartAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        cart, _ = Cart.objects.get_or_create(user=request.user)
+        cart, _ = Cart.objects.prefetch_related(
+            'items__diagnostic_center',
+            'items__tests',
+            'items__doctor__doctor',
+            'items__health_package__tests',
+            'items__sponsored_package__tests',
+            'items__visit_type',
+            'items__address'
+        ).get_or_create(user=request.user)
         items = cart.items.all()
         serializer = CartItemSerializer(items, many=True, context={"mode": "cart"})
 
@@ -166,24 +174,37 @@ class CheckoutCartAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, cart_id):
-        cart = get_object_or_404(Cart, id=cart_id, user=request.user)
+        cart = get_object_or_404(
+            Cart.objects.prefetch_related(
+                'items__diagnostic_center',
+                'items__tests',
+                'items__visit_type',
+                'items__address',
+                'items__health_package__tests',
+                'items__sponsored_package__tests',
+                'items__doctor__doctor',
+                'items__doctor__specialization',
+                'items__dependant'
+            ), 
+            id=cart_id, 
+            user=request.user
+        )
         items = cart.items.all()
 
         if not items.exists():
             return Response({"detail": "Cart is empty."}, status=400)
 
-        total_amount = 0
-        total_discount = 0
-        final_payable = 0
+        total_amount = Decimal('0.00')
+        total_discount = Decimal('0.00')
+        final_payable = Decimal('0.00')
 
         checkout_items = []
         for item in items:
             item.apply_discount()
 
-            base_price = float(item.price or item.consultation_fee or 0)
-            discount =float(item.discount_amount or 0)
-            final_price=float(item.final_price or base_price)
-
+            base_price = Decimal(str(item.price or item.consultation_fee or 0))
+            discount = Decimal(str(item.discount_amount or 0))
+            final_price = Decimal(str(item.final_price or base_price))
 
             total_amount += base_price
             total_discount += discount
@@ -201,7 +222,7 @@ class CheckoutCartAPIView(APIView):
                     "appointment_date": item.appointment_date,
                     "appointment_time": item.appointment_time,
                     "mode": item.mode,
-                    "consultation_fee": float(item.consultation_fee or 0),
+                    "consultation_fee": Decimal(str(item.consultation_fee or 0)),
                     "for_whom": item.for_whom,
                     "dependant": item.dependant.id if item.dependant else None,
                     "patient_name": item.patient_name,
@@ -229,7 +250,7 @@ class CheckoutCartAPIView(APIView):
 
             # LAB DETAILS
             lab_info = None
-            if item.item_type == "appointment":  # lab test appointment
+            if item.item_type == "test":  # lab test appointment
                 lab_info = {
                     "diagnostic_center": item.diagnostic_center.name if item.diagnostic_center else None,
                     "tests": [t.name for t in item.tests.all()],
@@ -246,7 +267,7 @@ class CheckoutCartAPIView(APIView):
                 health_package_info = {
                     "package_id": item.health_package.id,
                     "name": item.health_package.name,
-                    "price": float(item.health_package.price or 0),
+                    "price": Decimal(str(item.health_package.price or 0)),
                     "validity_till": item.health_package.validity_till,
                     "tests": [t.name for t in item.health_package.tests.all()],
                 }
@@ -257,7 +278,7 @@ class CheckoutCartAPIView(APIView):
                 sponsored_package_info = {
                     "package_id": item.sponsored_package.id,
                     "name": item.sponsored_package.name,
-                    "price": float(item.sponsored_package.price or 0),
+                    "price": Decimal(str(item.sponsored_package.price or 0)),
                     "description": item.sponsored_package.description,
                     "validity_till": item.sponsored_package.validity_till,
                     "tests": [t.name for t in item.sponsored_package.tests.all()],

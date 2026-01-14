@@ -18,7 +18,11 @@ from apps.diagnostic_center.filters import DiagnosticCenterFilter
 
 class DiagnosticCenterViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
-    queryset = DiagnosticCenter.objects.filter(deleted_at__isnull=True)
+    queryset = (
+        DiagnosticCenter.objects.filter(deleted_at__isnull=True)
+        .select_related("city")
+        .prefetch_related("tests", "visit_types", "health_packages", "sponsored_packages")
+    )
     serializer_class = DiagnosticCenterSerializer
 
     def list(self, request):
@@ -106,7 +110,12 @@ class DiagnosticCenterViewSet(viewsets.ModelViewSet):
 
 
 class DiagnosticCenterSearchAPIView(generics.ListAPIView):
-    queryset = DiagnosticCenter.objects.filter(deleted_at__isnull=True).distinct()
+    queryset = (
+        DiagnosticCenter.objects.filter(deleted_at__isnull=True)
+        .select_related("city")
+        .prefetch_related("tests", "visit_types", "health_packages", "sponsored_packages")
+        .distinct()
+    )
     serializer_class = DiagnosticCenterSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = DiagnosticCenterFilter

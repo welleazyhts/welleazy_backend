@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     
      # Third-party apps
     'rest_framework',
+    'drf_spectacular',
     "channels",
     'corsheaders',
     'rest_framework_simplejwt.token_blacklist'
@@ -88,6 +89,15 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Welleazy API',
+    'DESCRIPTION': 'API documentation for Welleazy Backend services.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # OTHER SETTINGS
 }
 
 LOGGING = {

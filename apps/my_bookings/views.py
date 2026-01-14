@@ -154,7 +154,7 @@ class MyBookingsCleanAPIView(APIView):
 
 
         # PHARMACY ORDERS
-        for p in PharmacyOrder.objects.filter(user=user).select_related("address"):
+        for p in PharmacyOrder.objects.filter(user=user).select_related("address__city", "address__state"):
             if not match_status(p.status):
                 continue
             if not match_date(p.ordered_date):
@@ -387,7 +387,7 @@ class MedicalReportUploadReportView(APIView):
 class PharmacyOrderMedicinesView(APIView):
     def get(self, request, pk):
         order = get_object_or_404(PharmacyOrder, pk=pk, user=request.user)
-        items = order.items.all()
+        items = order.items.select_related('medicine').all()
         serializer = PharmacyOrderItemSerializer(items, many=True)
         return Response({'order_id': order.order_id, 'items': serializer.data})
 

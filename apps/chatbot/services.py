@@ -192,42 +192,45 @@ class AIService:
                     }
                 )
 
-                # Handle tool execution
-                if response.candidates and response.candidates[0].content.parts:
-                    has_tool_call = False
-                    for part in response.candidates[0].content.parts:
-                        if part.function_call:
-                            has_tool_call = True
-                            func_name = part.function_call.name
-                            args = part.function_call.args
-                            
-                            logger.info(f"AI requested tool: {func_name} with args {args}")
-                            
-                            tool_func = getattr(self.tools, func_name)
-                            result = tool_func(**args) if args else tool_func()
-                            
-                            contents.append(response.candidates[0].content)
-                            contents.append(types.Content(
-                                role='tool',
-                                parts=[types.Part.from_function_response(
-                                    name=func_name,
-                                    response={'result': result}
-                                )]
-                            ))
-                            
-                            # Final generation after tool call
-                            final_response = self.gemini_client.models.generate_content(
-                                model=model_name,
-                                contents=contents,
-                                config={
-                                    'system_instruction': self.get_system_prompt(),
-                                    'tools': tools
-                                }
-                            )
-                            return final_response.text
+                # Loop to handle tool execution (Gemini can call multiple tools or the same tool multiple times)
+                max_iterations = 5
+                for _ in range(max_iterations):
+                    if not response.candidates or not response.candidates[0].content.parts:
+                        break
+                        
+                    parts = response.candidates[0].content.parts
+                    tool_calls = [p.function_call for p in parts if p.function_call]
                     
-                    if not has_tool_call:
+                    if not tool_calls:
                         return response.text
+
+                    contents.append(response.candidates[0].content)
+                    tool_responses = []
+                    
+                    for fc in tool_calls:
+                        func_name = fc.name
+                        args = fc.args
+                        logger.info(f"Gemini requested tool: {func_name} with args {args}")
+                        
+                        tool_func = getattr(self.tools, func_name)
+                        result = tool_func(**args) if args else tool_func()
+                        
+                        tool_responses.append(types.Part.from_function_response(
+                            name=func_name,
+                            response={'result': result}
+                        ))
+                    
+                    contents.append(types.Content(role='tool', parts=tool_responses))
+                    
+                    # Generation after tool calls
+                    response = self.gemini_client.models.generate_content(
+                        model=model_name,
+                        contents=contents,
+                        config={
+                            'system_instruction': self.get_system_prompt(),
+                            'tools': tools
+                        }
+                    )
                 
                 return response.text
 
@@ -264,12 +267,8 @@ class AIService:
                                 "city": {"type": "string", "description": "City name"}
                             } if t.__name__ == 'search_doctors' else (
                                 {
-                                    "type": "object",
-                                    "properties": {
-                                        "query": {"type": "string", "description": "Search term (specific or broad)"}
-                                    },
-                                    "required": ["query"]
-                                } if t.__name__ in search_query_tools else {"type": "object", "properties": {}}
+                                    "query": {"type": "string", "description": "Search term (specific or broad)"}
+                                } if t.__name__ in search_query_tools else {}
                             ),
                             "required": ["query"] if t.__name__ in search_query_tools else []
                         }
