@@ -322,191 +322,196 @@ class ConfirmCheckoutAPIView(APIView):
             return Response({"detail": "Cart is empty"}, status=400)
 
         created = []
+        
+        try:
+            with transaction.atomic():
+                for item in items:
 
-        for item in items:
+                    scheduled_at = None
 
-            scheduled_at = None
+                    if item.appointment_date and item.appointment_time:
+                        scheduled_at = datetime.combine(item.appointment_date, item.appointment_time)
 
-            if item.appointment_date and item.appointment_time:
-                scheduled_at = datetime.combine(item.appointment_date, item.appointment_time)
+                    elif item.selected_date and item.selected_time:
+                        scheduled_at = datetime.combine(item.selected_date, item.selected_time)
 
-            elif item.selected_date and item.selected_time:
-                scheduled_at = datetime.combine(item.selected_date, item.selected_time)
+                    # DOCTOR APPOINTMENT CREATION
+                    if item.item_type == "doctor_appointment":
+                        appt = Appointment.objects.create(
+                            user=request.user,
+                            item_type="doctor_appointment",
+                            doctor=item.doctor,
+                            for_whom=item.for_whom,
+                            dependant=item.dependant,
+                            note=item.note,
+                            patient_name = item.patient_name,
+                            mode=item.mode,
+                            scheduled_at=scheduled_at,
+                            status="pending"
+                        )
 
-            # DOCTOR APPOINTMENT CREATION
-            if item.item_type == "doctor_appointment":
-                appt = Appointment.objects.create(
-                    user=request.user,
-                    item_type="doctor_appointment",
-                    doctor=item.doctor,
-                    for_whom=item.for_whom,
-                    dependant=item.dependant,
-                    note=item.note,
-                    patient_name = item.patient_name,
-                    mode=item.mode,
-                    scheduled_at=scheduled_at,
-                    status="pending"
-                )
-
-                created.append({
-                    "appointment_id": appt.id,
-                    "type": "doctor_appointment",
-                    "doctor": item.doctor.doctor.full_name,
-                    "date": item.appointment_date,
-                    "time": item.appointment_time,
-                })
-
-
-            # elif item.item_type in ["eye_appointment", "dental_appointment"]:
-            #     appt = Appointment.objects.create(
-            #         user=request.user,
-            #         item_type=item.item_type,
-            #         vendor=item.vendor,
-            #         eye_vendor_centers=item.eye_vendor_centers,
-            #         for_whom=item.for_whom,
-            #         dependant=item.dependant,
-            #         note=item.note,
-            #         patient_name= item.patient_name,
-            #         scheduled_at=scheduled_at,
-            #         status="confirmed",
-            #     )
-            #     when=timezone.localtime(scheduled_at) if timezone.is_aware(scheduled_at) else scheduled_at
-            #     notify_user(
-            #         request.user,
-            #         "Eye Appointment Confirmed",
-            #         f"Your eye appointment is confirmed for "
-            #         f"{when.strftime('%d %b %Y')} at {when.strftime('%I:%M %p')}.",
-            #         item_type="eye_appointment"
-            #     )
-
-            #     created.append({
-            #         "appointment_id": appt.id,
-            #         "type": "eye_appointment",
-            #         "date": item.appointment_date or item.selected_date,
-            #         "time": item.appointment_time or item.selected_time,
-            #     })
-
-            # DENTAL APPOINTMENT
-            # elif item.item_type == "dental_appointment":
-            #     appt = Appointment.objects.create(
-            #         user=request.user,
-            #         item_type="dental_appointment",
-            #         vendor=item.vendor,
-            #         dental_vendor_centers=item.dental_vendor_centers,
-            #         for_whom=item.for_whom,
-            #         dependant=item.dependant,
-            #         note=item.note,
-            #         patient_name= item.patient_name,
-            #         scheduled_at=scheduled_at,
-            #         status="pending"
-            #     )
-
-            #     created.append({
-            #         "appointment_id": appt.id,
-            #         "type": item.item_type,
-            #         "date": item.appointment_date,
-            #         "time": item.appointment_time,
-            #     })
+                        created.append({
+                            "appointment_id": appt.id,
+                            "type": "doctor_appointment",
+                            "doctor": item.doctor.doctor.full_name,
+                            "date": item.appointment_date,
+                            "time": item.appointment_time,
+                        })
 
 
-            # LAB APPOINTMENT CREATION
-            elif item.item_type == "test":  
-                appt = Appointment.objects.create(
-                    user=request.user,
-                    item_type="lab_appointment",
-                    diagnostic_center=item.diagnostic_center,
-                    visit_type=item.visit_type,
-                    for_whom=item.for_whom,
-                    dependant=item.dependant,
-                    address=item.address,
-                    note=item.note,
-                    scheduled_at=scheduled_at,
-                    status="pending",
-                )
+                    # elif item.item_type in ["eye_appointment", "dental_appointment"]:
+                    #     appt = Appointment.objects.create(
+                    #         user=request.user,
+                    #         item_type=item.item_type,
+                    #         vendor=item.vendor,
+                    #         eye_vendor_centers=item.eye_vendor_centers,
+                    #         for_whom=item.for_whom,
+                    #         dependant=item.dependant,
+                    #         note=item.note,
+                    #         patient_name= item.patient_name,
+                    #         scheduled_at=scheduled_at,
+                    #         status="confirmed",
+                    #     )
+                    #     when=timezone.localtime(scheduled_at) if timezone.is_aware(scheduled_at) else scheduled_at
+                    #     notify_user(
+                    #         request.user,
+                    #         "Eye Appointment Confirmed",
+                    #         f"Your eye appointment is confirmed for "
+                    #         f"{when.strftime('%d %b %Y')} at {when.strftime('%I:%M %p')}.",
+                    #         item_type="eye_appointment"
+                    #     )
 
-                for t in item.tests.all():
-                    AppointmentItem.objects.create(
-                        appointment=appt,
-                        test=t,
-                        price=t.price
-                    )
+                    #     created.append({
+                    #         "appointment_id": appt.id,
+                    #         "type": "eye_appointment",
+                    #         "date": item.appointment_date or item.selected_date,
+                    #         "time": item.appointment_time or item.selected_time,
+                    #     })
 
-                created.append({
-                    "appointment_id": appt.id,
-                    "type": "lab_appointment",
-                    "tests": [t.name for t in item.tests.all()],
-                    "date": item.selected_date,
-                    "time": item.selected_time,
-                })
+                    # DENTAL APPOINTMENT
+                    # elif item.item_type == "dental_appointment":
+                    #     appt = Appointment.objects.create(
+                    #         user=request.user,
+                    #         item_type="dental_appointment",
+                    #         vendor=item.vendor,
+                    #         dental_vendor_centers=item.dental_vendor_centers,
+                    #         for_whom=item.for_whom,
+                    #         dependant=item.dependant,
+                    #         note=item.note,
+                    #         patient_name= item.patient_name,
+                    #         scheduled_at=scheduled_at,
+                    #         status="pending"
+                    #     )
+
+                    #     created.append({
+                    #         "appointment_id": appt.id,
+                    #         "type": item.item_type,
+                    #         "date": item.appointment_date,
+                    #         "time": item.appointment_time,
+                    #     })
 
 
-            # HEALTH PACKAGE APPOINTMENT
-            elif item.item_type == "health_package" and item.health_package:
-                appt = Appointment.objects.create(
-                    user=request.user,
-                    item_type="health_package",
-                    diagnostic_center=item.diagnostic_center,
-                    for_whom=item.for_whom,
-                    dependant=item.dependant,
-                    scheduled_at=scheduled_at, 
-                    note=item.note,
-                    status="pending"
-                )
+                    # LAB APPOINTMENT CREATION
+                    elif item.item_type == "test":  
+                        appt = Appointment.objects.create(
+                            user=request.user,
+                            item_type="lab_appointment",
+                            diagnostic_center=item.diagnostic_center,
+                            visit_type=item.visit_type,
+                            for_whom=item.for_whom,
+                            dependant=item.dependant,
+                            address=item.address,
+                            note=item.note,
+                            scheduled_at=scheduled_at,
+                            status="pending",
+                        )
 
-                # Add package tests inside AppointmentItem
-                for t in item.health_package.tests.all():
-                    AppointmentItem.objects.create(
-                        appointment=appt,
-                        test=t,
-                        price=t.price
-                    )
+                        for t in item.tests.all():
+                            AppointmentItem.objects.create(
+                                appointment=appt,
+                                test=t,
+                                price=t.price
+                            )
 
-                created.append({
-                    "appointment_id": appt.id,
-                    "type": "health_package",
-                    "package": item.health_package.name,
-                    "tests": [t.name for t in item.health_package.tests.all()],
-                    "date": item.selected_date,
-                    "time": item.selected_time,
+                        created.append({
+                            "appointment_id": appt.id,
+                            "type": "lab_appointment",
+                            "tests": [t.name for t in item.tests.all()],
+                            "date": item.selected_date,
+                            "time": item.selected_time,
+                        })
 
-                })
 
-            # SPONSORED PACKAGE APPOINTMENT
-            elif item.item_type == "sponsored_package" and item.sponsored_package:
-                appt = Appointment.objects.create(
-                    user=request.user,
-                    item_type="sponsored_package",
-                    diagnostic_center=item.diagnostic_center,
-                    for_whom=item.for_whom,
-                    dependant=item.dependant,
-                    scheduled_at=scheduled_at,   
-                    note=item.note,
-                    status="pending"
-                )
+                    # HEALTH PACKAGE APPOINTMENT
+                    elif item.item_type == "health_package" and item.health_package:
+                        appt = Appointment.objects.create(
+                            user=request.user,
+                            item_type="health_package",
+                            diagnostic_center=item.diagnostic_center,
+                            for_whom=item.for_whom,
+                            dependant=item.dependant,
+                            scheduled_at=scheduled_at, 
+                            note=item.note,
+                            status="pending"
+                        )
 
-                # Add sponsored package tests
-                for t in item.sponsored_package.tests.all():
-                    AppointmentItem.objects.create(
-                        appointment=appt,
-                        test=t,
-                        price=t.price
-                    )
+                        # Add package tests inside AppointmentItem
+                        for t in item.health_package.tests.all():
+                            AppointmentItem.objects.create(
+                                appointment=appt,
+                                test=t,
+                                price=t.price
+                            )
 
-                created.append({
-                    "appointment_id": appt.id,
-                    "type": "sponsored_package",
-                    "package": item.sponsored_package.name,
-                    "tests": [t.name for t in item.sponsored_package.tests.all()],
-                    "date": item.selected_date,
-                    "time": item.selected_time,
-                })
-        # Finally clear cart
-        cart.items.all().delete()
+                        created.append({
+                            "appointment_id": appt.id,
+                            "type": "health_package",
+                            "package": item.health_package.name,
+                            "tests": [t.name for t in item.health_package.tests.all()],
+                            "date": item.selected_date,
+                            "time": item.selected_time,
 
-        return Response({
-            "message": "Checkout completed",
-            "appointments": created
-        }, status=201)
+                        })
+
+                    # SPONSORED PACKAGE APPOINTMENT
+                    elif item.item_type == "sponsored_package" and item.sponsored_package:
+                        appt = Appointment.objects.create(
+                            user=request.user,
+                            item_type="sponsored_package",
+                            diagnostic_center=item.diagnostic_center,
+                            for_whom=item.for_whom,
+                            dependant=item.dependant,
+                            scheduled_at=scheduled_at,   
+                            note=item.note,
+                            status="pending"
+                        )
+
+                        # Add sponsored package tests
+                        for t in item.sponsored_package.tests.all():
+                            AppointmentItem.objects.create(
+                                appointment=appt,
+                                test=t,
+                                price=t.price
+                            )
+
+                        created.append({
+                            "appointment_id": appt.id,
+                            "type": "sponsored_package",
+                            "package": item.sponsored_package.name,
+                            "tests": [t.name for t in item.sponsored_package.tests.all()],
+                            "date": item.selected_date,
+                            "time": item.selected_time,
+                        })
+                # Finally clear cart
+                cart.items.all().delete()
+
+            return Response({
+                "message": "Checkout completed",
+                "appointments": created
+            }, status=201)
+        
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
 
 
 

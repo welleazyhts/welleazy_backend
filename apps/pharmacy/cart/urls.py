@@ -49,7 +49,6 @@ urlpatterns=[
 
     # Prescription
     path("prescription/upload/", UploadPrescriptionAPIView.as_view()),
-    path("e-prescription/",ListPrescriptionsAPIView.as_view()),
     path("prescriptions/", ListPrescriptionsAPIView.as_view()),
     path("prescription/download/<int:pk>/", DownloadPrescriptionAPIView.as_view()),
     path("order/create/", PharmacyOrderCreateAPIView.as_view()), 

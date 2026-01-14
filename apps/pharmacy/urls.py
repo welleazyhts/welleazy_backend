@@ -28,7 +28,6 @@ from .views import (
     MedicineUpdateAPIView,
     MedicineDeleteAPIView,
     MedicineDetailAPIView,
-    PharmacyMedicineFilterAPIView,
     MedicineDetailsCreateAPIView,
     MedicineDetailsUpdateAPIView,
 )

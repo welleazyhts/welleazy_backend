@@ -1,8 +1,3 @@
-from django.db import models
-
-# Create your models here.
-
-
 # app: women_health/models.py
 from django.db import models
 from django.utils import timezone

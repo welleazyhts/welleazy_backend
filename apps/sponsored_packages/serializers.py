@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from .models import SponsoredPackage
 from apps.labtest.models import Test
-from apps.labtest.models import Test
-
 class SponsoredPackageSerializer(serializers.ModelSerializer):
     test_ids = serializers.PrimaryKeyRelatedField(
         many=True,

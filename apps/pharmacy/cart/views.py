@@ -16,6 +16,7 @@ import mimetypes
 from apps.pharmacy.models import PharmacyOrder , PharmacyOrderItem
 from datetime import datetime
 from apps.notifications.utils import notify_user
+from django.db import transaction
 
 # Create your views here.
 
@@ -523,59 +524,64 @@ class PharmacyOrderCreateAPIView(APIView):
         # 4. Generate a unique Order ID
         order_id = f"PHAR-{int(datetime.now().timestamp())}"
 
-        # 5. CREATE PharmacyOrder
-        order = PharmacyOrder.objects.create(
-            order_id=order_id,
-            user=user,
-            patient_name=user.name if hasattr(user, "name") else user.email ,
-            order_type=cart.delivery_mode,
-            status="confirmed",
-            ordered_date=datetime.today().date(),
-            expected_delivery_date=expected_date,
-            total_amount=total_amount,
-            address=cart.address
-        )
+        try:
+            with transaction.atomic():
+                # 5. CREATE PharmacyOrder
+                order = PharmacyOrder.objects.create(
+                    order_id=order_id,
+                    user=user,
+                    patient_name=user.name if hasattr(user, "name") else user.email ,
+                    order_type=cart.delivery_mode,
+                    status="confirmed",
+                    ordered_date=datetime.today().date(),
+                    expected_delivery_date=expected_date,
+                    total_amount=total_amount,
+                    address=cart.address
+                )
 
-        # 6. Add prescription file to order (if exists)
-        if cart.prescription:
-            order.prescription_file = cart.prescription.file
-            order.save()
+                # 6. Add prescription file to order (if exists)
+                if cart.prescription:
+                    order.prescription_file = cart.prescription.file
+                    order.save()
 
-        # 7. Move cart items -> PharmacyOrderItems
-        for item in cart.items.all():
-            PharmacyOrderItem.objects.create(
-                order=order,
-                medicine=item.medicine,
-                quantity=item.quantity,
-                amount=item.quantity * item.medicine.selling_price
+                # 7. Move cart items -> PharmacyOrderItems
+                for item in cart.items.all():
+                    PharmacyOrderItem.objects.create(
+                        order=order,
+                        medicine=item.medicine,
+                        quantity=item.quantity,
+                        amount=item.quantity * item.medicine.selling_price
+                    )
+
+                # 8. Clear Cart after creating order
+                cart.items.all().delete()
+                cart.coupon = None
+                cart.prescription = None
+                cart.save()
+
+            when = expected_date  # date object
+            formatted_date = when.strftime('%d %b %Y')
+
+            notify_user(
+                request.user,
+                "Pharmacy Order Placed",
+                f"Your pharmacy order {order.order_id} has been placed successfully.\n"
+                f"Expected delivery date: {formatted_date}.",
+                item_type="pharmacy_order"
             )
-
-        # 8. Clear Cart after creating order
-        cart.items.all().delete()
-        cart.coupon = None
-        cart.prescription = None
-        cart.save()
-
-        when = expected_date  # date object
-        formatted_date = when.strftime('%d %b %Y')
-
-        notify_user(
-            request.user,
-            "Pharmacy Order Placed",
-            f"Your pharmacy order {order.order_id} has been placed successfully.\n"
-            f"Expected delivery date: {formatted_date}.",
-            item_type="pharmacy_order"
-        )
-        # 9. Return success
-        return Response({
-            "message": "Order placed successfully!",
-            "order_id": order.order_id,
-            "summary": {
-                "items": order.items.count(),
-                "subtotal": float(subtotal),
-                "coupon_discount": float(coupon_discount),
-                "total_payable": float(total_amount),
-                "delivery_mode": order.order_type,
-                "expected_delivery_date": expected_date,
-            }
-        }, status=201)
+            # 9. Return success
+            return Response({
+                "message": "Order placed successfully!",
+                "order_id": order.order_id,
+                "summary": {
+                    "items": order.items.count(),
+                    "subtotal": float(subtotal),
+                    "coupon_discount": float(coupon_discount),
+                    "total_payable": float(total_amount),
+                    "delivery_mode": order.order_type,
+                    "expected_delivery_date": expected_date,
+                }
+            }, status=201)
+            
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
